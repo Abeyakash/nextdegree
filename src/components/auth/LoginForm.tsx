@@ -1,15 +1,20 @@
+// File: src/components/auth/LoginForm.tsx
+
 'use client';
 
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+// FIX: Supabase client ko naye tareeke se import karein
+import { createClient } from '@/lib/supabase/client'; 
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  // FIX: Client ko component ke andar initialize karein
+  const supabase = createClient(); 
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,7 +29,7 @@ export default function LoginForm() {
       setError(error.message);
     } else {
       router.push('/');
-      router.refresh();
+      router.refresh(); // Page refresh karein taaki header update ho
     }
   };
 
@@ -76,7 +81,18 @@ export default function LoginForm() {
           </label>
         </div>
 
-        {error && <p className="text-red-600 text-center">{error}</p>}
+        {/* --- YEH LINK ADD KIYA GAYA HAI --- */}
+        <div className="text-right text-sm">
+          <Link
+            href="/forgot-password"
+            className="font-medium text-indigo-600 hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        </div>
+        {/* --- YAHAN TAK --- */}
+
+        {error && <p className="text-red-600 text-center text-sm">{error}</p>}
 
         <button
           type="submit"
@@ -88,7 +104,10 @@ export default function LoginForm() {
       <div className="text-sm text-center mt-6">
         <p className="text-gray-600">
           Don&apos;t have an account?
-          <Link href="/auth/signup" className="font-medium text-indigo-600 hover:underline ml-1">
+          <Link
+            href="/auth/signup"
+            className="font-medium text-indigo-600 hover:underline ml-1"
+          >
             Sign up
           </Link>
         </p>
