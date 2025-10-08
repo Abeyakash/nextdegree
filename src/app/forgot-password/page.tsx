@@ -1,9 +1,12 @@
+// File: src/app/forgot-password/page.tsx
+
 import { requestPasswordReset } from './actions';
 
+// The props type has been corrected to be more robust
 export default function ForgotPassword({
   searchParams,
 }: {
-  searchParams: { message: string };
+  searchParams?: { message: string };
 }) {
   return (
     <div className="flex justify-center items-center h-screen bg-gray-50">
