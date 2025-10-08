@@ -121,7 +121,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
           {filteredColleges.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {/* --- FAVORITES FEATURE ADDED HERE --- */}
-              {filteredColleges.slice(0, 3).map((college) => (
+              {filteredColleges.slice(0, 6).map((college) => (
                 <CollegeCard 
                   key={college.id} 
                   college={college}
