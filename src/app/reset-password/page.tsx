@@ -1,10 +1,16 @@
 import { updateUserPassword } from './actions';
 
-export default function ResetPassword({
+// Fixed for Next.js 15
+type SearchParams = Promise<{ message?: string }>
+
+export default async function ResetPassword({
   searchParams,
 }: {
-  searchParams: { message: string };
+  searchParams: SearchParams
 }) {
+  // Await the searchParams
+  const params = await searchParams
+  
   return (
     <div className="flex justify-center items-center h-screen bg-gray-50">
       <div className="w-full max-w-sm p-8 bg-white rounded-xl shadow-lg">
@@ -44,9 +50,9 @@ export default function ResetPassword({
             Update Password
           </button>
         </form>
-        {searchParams?.message && (
+        {params?.message && (
           <p className="mt-4 text-center text-sm text-red-600">
-            {searchParams.message}
+            {params.message}
           </p>
         )}
       </div>

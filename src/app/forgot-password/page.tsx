@@ -1,13 +1,16 @@
-// File: src/app/forgot-password/page.tsx
-
 import { requestPasswordReset } from './actions';
 
-// The props type has been corrected to be more robust
-export default function ForgotPassword({
+// Fixed for Next.js 15
+type SearchParams = Promise<{ message?: string }>
+
+export default async function ForgotPassword({
   searchParams,
 }: {
-  searchParams?: { message: string };
+  searchParams: SearchParams
 }) {
+  // Await the searchParams
+  const params = await searchParams
+  
   return (
     <div className="flex justify-center items-center h-screen bg-gray-50">
       <div className="w-full max-w-sm p-8 bg-white rounded-xl shadow-lg">
@@ -35,9 +38,9 @@ export default function ForgotPassword({
             Send Reset Link
           </button>
         </form>
-        {searchParams?.message && (
+        {params?.message && (
           <p className="mt-4 text-center text-sm text-green-600">
-            {searchParams.message}
+            {params.message}
           </p>
         )}
       </div>
