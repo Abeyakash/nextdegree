@@ -1,30 +1,25 @@
-// File: src/app/reset-password/actions.ts
-
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
-export async function updateUserPassword(formData: FormData) {
-  const password = formData.get('password') as string;
-  const confirmPassword = formData.get('confirmPassword') as string;
+export async function requestPasswordReset(formData: FormData) {
+  const email = formData.get('email') as string;
   const supabase = createClient();
 
-  if (password !== confirmPassword) {
-    return redirect(
-      '/reset-password?message=Passwords do not match'
-    );
-  }
+  // Uses the Environment Variable for the redirect URL
+  const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`;
 
-  const { error } = await supabase.auth.updateUser({ password: password });
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: redirectUrl,
+  });
 
   if (error) {
-    console.error('Error updating password:', error);
-    return redirect(
-      '/reset-password?message=Could not update password. Please try again.'
-    );
+    console.error('Password Reset Error:', error);
+    return redirect('/forgot-password?message=Error: Could not send reset link');
   }
 
-  // Password update hone ke baad user ko login page par bhej dein
-  return redirect('/auth/login?message=Password updated successfully. Please log in.');
+  return redirect(
+    '/forgot-password?message=Password reset link has been sent to your email.'
+  );
 }
