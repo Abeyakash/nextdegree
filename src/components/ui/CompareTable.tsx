@@ -2,70 +2,94 @@
 
 import React from 'react';
 import { useCompare } from '@/lib/compare-context';
-import { DollarSign, Star, MapPin, Briefcase } from 'lucide-react';
+import { College } from '@/data/colleges';
+import { MapPin, DollarSign, Star, Briefcase, Users } from 'lucide-react';
 
 export const CompareTable: React.FC = () => {
   const { compareList, removeFromCompare, clearCompare } = useCompare();
 
-  if (compareList.length === 0) return null;
+  if (compareList.length === 0) {
+    return null;
+  }
+
+  // --- NEW LOGIC: Find the best values ---
+  const highestRating = Math.max(...compareList.map(c => c.rating));
+  const lowestFee = Math.min(...compareList.map(c => c.fees));
+  // --- END OF NEW LOGIC ---
+
+  const attributes = [
+    { name: 'Location', icon: <MapPin className="w-4 h-4 mr-2" /> },
+    { name: 'Courses', icon: <Briefcase className="w-4 h-4 mr-2" /> },
+    { name: 'Fees', icon: <DollarSign className="w-4 h-4 mr-2" /> },
+    { name: 'Rating', icon: <Star className="w-4 h-4 mr-2" /> },
+    { name: 'Students', icon: <Users className="w-4 h-4 mr-2" /> },
+    { name: 'Action', icon: <div className="w-4 h-4 mr-2" /> }, // Empty div for spacing
+  ];
 
   return (
-    <div className="overflow-x-auto mt-10">
+    <div className="bg-white p-6 rounded-xl shadow-2xl mb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-gray-800">Compare Colleges</h2>
-        <button 
-          onClick={clearCompare} 
-          className="text-red-600 font-semibold hover:underline"
+        <button
+          onClick={clearCompare}
+          className="font-semibold text-red-600 hover:text-red-800 transition-colors"
         >
           Clear All
         </button>
       </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left">
+          {/* Table Head */}
+          <thead>
+            <tr className="border-b-2 border-gray-200">
+              <th className="p-4 font-semibold text-gray-600 w-[15%]">Attribute</th>
+              {compareList.map((college: College) => (
+                <th key={college.id} className="p-4 font-bold text-gray-800">
+                  {college.name}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          {/* Table Body */}
+          <tbody>
+            {attributes.map((attr, index) => (
+              <tr key={attr.name} className={`border-b border-gray-100 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                <td className="p-4 font-semibold text-gray-700 flex items-center">{attr.icon}{attr.name}</td>
+                {compareList.map((college: College) => (
+                  <td key={`${college.id}-${attr.name}`} className="p-4 text-gray-600">
+                    {attr.name === 'Location' && college.location}
+                    {attr.name === 'Courses' && college.courses.join(', ')}
+                    
+                    {/* --- HIGHLIGHTING APPLIED HERE --- */}
+                    {attr.name === 'Fees' && (
+                      <span className={college.fees === lowestFee ? 'font-bold text-green-600' : ''}>
+                        ₹{college.fees.toLocaleString()}/year
+                      </span>
+                    )}
+                    {attr.name === 'Rating' && (
+                      <div className={`flex items-center ${college.rating === highestRating ? 'font-bold text-green-600' : ''}`}>
+                        <Star className={`w-4 h-4 mr-1 ${college.rating === highestRating ? 'text-green-500 fill-green-500' : 'text-yellow-500 fill-yellow-500'}`} />
+                        {college.rating.toFixed(1)}
+                      </div>
+                    )}
+                    {/* --- END OF HIGHLIGHTING --- */}
 
-      <table className="min-w-full bg-white border border-gray-200 rounded-xl shadow-md">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-4 py-2 text-left">Attribute</th>
-            {compareList.map(college => (
-              <th key={college.id} className="px-4 py-2 text-left">{college.name}</th>
+                    {attr.name === 'Students' && college.students}
+                    {attr.name === 'Action' && (
+                      <button
+                        onClick={() => removeFromCompare(college.id)}
+                        className="bg-red-100 text-red-700 px-3 py-1 rounded-md hover:bg-red-200 font-semibold"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </td>
+                ))}
+              </tr>
             ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr className="border-t">
-            <td className="px-4 py-2 font-medium">Location</td>
-            {compareList.map(c => <td key={c.id} className="px-4 py-2 flex items-center"><MapPin className="w-4 h-4 mr-1"/> {c.location}</td>)}
-          </tr>
-          <tr className="border-t">
-            <td className="px-4 py-2 font-medium">Courses</td>
-            {compareList.map(c => <td key={c.id} className="px-4 py-2 flex items-center"><Briefcase className="w-4 h-4 mr-1"/> {c.courses.join(', ')}</td>)}
-          </tr>
-          <tr className="border-t">
-            <td className="px-4 py-2 font-medium">Fees</td>
-            {compareList.map(c => <td key={c.id} className="px-4 py-2 flex items-center"><DollarSign className="w-4 h-4 mr-1"/> ₹{c.fees.toLocaleString()}/year</td>)}
-          </tr>
-          <tr className="border-t">
-            <td className="px-4 py-2 font-medium">Rating</td>
-            {compareList.map(c => <td key={c.id} className="px-4 py-2 flex items-center"><Star className="w-4 h-4 mr-1 text-yellow-500"/> {c.rating.toFixed(1)}</td>)}
-          </tr>
-          <tr className="border-t">
-            <td className="px-4 py-2 font-medium">Students</td>
-            {compareList.map(c => <td key={c.id} className="px-4 py-2">{c.students}</td>)}
-          </tr>
-          <tr className="border-t">
-            <td className="px-4 py-2 font-medium">Action</td>
-            {compareList.map(c => (
-              <td key={c.id} className="px-4 py-2">
-                <button 
-                  onClick={() => removeFromCompare(c.id)} 
-                  className="text-red-600 hover:underline font-medium"
-                >
-                  Remove
-                </button>
-              </td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
