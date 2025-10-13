@@ -4,7 +4,7 @@ import { MapPin, Star, Users, Calendar, TrendingUp, Phone, Mail, Globe } from 'l
 import Link from 'next/link';
 
 interface CollegePageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 // Helper to fix missing protocol in URLs
@@ -16,7 +16,8 @@ function formatUrl(url?: string) {
 }
 
 export default async function CollegePage({ params }: CollegePageProps) {
-  const { slug } = params;
+  // Await the params in Next.js 15
+  const { slug } = await params;
   const supabase = createClient();
 
   // Fetch single college record by slug
