@@ -4,6 +4,7 @@ import { use } from 'react'
 import { notFound } from 'next/navigation'
 import { getCollegeBySlug } from '@/data/colleges'
 
+
 import { MapPin, Star, Users, Calendar, TrendingUp, Phone, Mail, Globe } from 'lucide-react'
 import Link from 'next/link'
 

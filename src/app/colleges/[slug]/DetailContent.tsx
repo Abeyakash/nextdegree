@@ -4,25 +4,24 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, Calendar, Briefcase, Award } from 'lucide-react';
 import { College } from '../../../data/colleges';
+// FIX: 'AddReviewForm' aur 'ReviewsList' ko import kiya gaya hai
 import AddReviewForm from '@/components/reviews/AddReviewForm';
 import ReviewsList from '@/components/reviews/ReviewsList';
 
+// FIX: 'userId' prop ko add kiya gaya hai
 interface DetailContentProps {
     college: College;
+    userId?: string | null;
 }
 
-// Changed from 'const' to 'export const' to make it a named export
-export const DetailContent: React.FC<DetailContentProps> = ({ college }) => {
+export const DetailContent: React.FC<DetailContentProps> = ({ college, userId }) => {
     const [activeTab, setActiveTab] = useState('Overview');
     const tabs = ['Overview', 'Courses & Fees', 'Placements', 'Admissions', 'Reviews'];
-    const [reviewCount, setReviewCount] = useState(0);
+    
+    // FIX: Purane state (reviewCount) aur function (handleReviewAdded) ko hata diya gaya hai
     const [formName, setFormName] = useState('');
     const [formEmail, setFormEmail] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
-
-    const handleReviewAdded = () => {
-        setReviewCount(prev => prev + 1);
-    };
 
     const ContentAnimation: React.FC<{ children: React.ReactNode }> = ({ children }) => (
         <motion.div
@@ -46,7 +45,6 @@ export const DetailContent: React.FC<DetailContentProps> = ({ college }) => {
     };
 
     const renderTabContent = () => {
-        // ... (The entire switch statement remains the same)
         switch (activeTab) {
             case 'Overview':
                 return (
@@ -72,9 +70,17 @@ export const DetailContent: React.FC<DetailContentProps> = ({ college }) => {
                     </div>
                 );
             case 'Admissions':
+                // FIX: Apostrophe (') ko '&apos;' se replace kiya gaya hai
                 return (<p className="text-gray-700 text-lg">Admission process typically includes cut-off announcements, application deadlines, and document verification steps. Check the college&apos;s official website for the latest schedule.</p>);
             case 'Reviews':
-                return (<div className="space-y-8"><AddReviewForm collegeId={college.id} onReviewAdded={handleReviewAdded} /><ReviewsList key={reviewCount} collegeId={college.id} /></div>);
+                // FIX: 'onReviewAdded' aur 'key' props hata diye gaye hain.
+                // Form ab sirf tab dikhega jab user logged in ho.
+                return (
+                    <div className="space-y-8">
+                        {userId && <AddReviewForm collegeId={college.id} />}
+                        <ReviewsList collegeId={college.id} />
+                    </div>
+                );
             default:
                 return null;
         }
@@ -96,5 +102,3 @@ export const DetailContent: React.FC<DetailContentProps> = ({ college }) => {
         </div>
     );
 };
-
-// The 'export default' line is removed
