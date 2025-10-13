@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, DollarSign, Star, Briefcase, ChevronRight, Heart } from 'lucide-react';
+import { MapPin, IndianRupee, Star, Briefcase, ChevronRight, Heart } from 'lucide-react';
 import { College } from '@/data/colleges';
 import { useCompare } from '@/lib/compare-context';
 import { toggleFavorite } from '@/app/actions';
@@ -57,8 +57,8 @@ export default function CollegeCard({ college, userId, isFavorited }: CollegeCar
             {college.courses.join(', ')}
           </p>
           <p className="flex items-center font-bold text-green-700">
-            <DollarSign className="w-4 h-4 mr-1" />
-            ₹{college.fees.toLocaleString()}/year
+            <IndianRupee className="w-4 h-4 mr-1" />
+            {college.fees.toLocaleString()}/year
           </p>
         </div>
         <div className="mt-auto pt-6 flex items-center justify-between">

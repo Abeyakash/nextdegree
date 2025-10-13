@@ -8,20 +8,29 @@ import { ChatIcon } from '@/components/ChatIcon'
 import { ChatBot } from '@/components/ChatBot'
 import { College } from '@/data/colleges'
 
-// This component now receives all data from the server as props
-export default function HomePageClient({ initialColleges, userId, favoriteCollegeIds }: {
+// FIX 1: 'any' type ko hatakar ek proper type banaya hai
+interface NewsArticle {
+  id: number;
+  title: string;
+  summary: string;
+  link: string;
+}
+
+// Props definition ko update kiya hai
+export default function HomePageClient({ initialColleges, userId, favoriteCollegeIds, news }: {
     initialColleges: College[];
     userId: string | null | undefined;
     favoriteCollegeIds: Set<number>;
+    news: NewsArticle[]; // Yahan naya type use kiya hai
 }) {
-  // --- ALL YOUR ORIGINAL STATE AND REFS ARE UNCHANGED ---
+  // --- AAPKA ORIGINAL STATE AUR REFS (KOI CHANGE NAHI) ---
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [query, setQuery] = useState('')
   const heroRef = useRef<HTMLDivElement>(null)
   const statsRef = useRef<HTMLDivElement>(null)
   const collegesRef = useRef<HTMLDivElement>(null)
 
-  // --- YOUR ANIMATION LOGIC IS UNCHANGED ---
+  // --- AAPKA ANIMATION LOGIC (KOI CHANGE NAHI) ---
   useEffect(() => {
     const observerOptions = {
       threshold: 0.1,
@@ -40,7 +49,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
     return () => observer.disconnect()
   }, [])
 
-  // --- YOUR SEARCH LOGIC IS UNCHANGED (but now uses data from props) ---
+  // --- AAPKA SEARCH LOGIC (KOI CHANGE NAHI) ---
   const filteredColleges = initialColleges.filter(
     (college) =>
       college.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -53,7 +62,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
   return (
     <main className="min-h-screen bg-white">
 
-      {/* --- YOUR HERO SECTION IS UNCHANGED --- */}
+      {/* --- AAPKA HERO SECTION (KOI CHANGE NAHI) --- */}
       <section
         ref={heroRef}
         className="bg-gradient-to-br from-indigo-50 via-purple-50 to-white py-20 opacity-0 translate-y-8 transition-all duration-700"
@@ -82,7 +91,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
         </div>
       </section>
 
-      {/* --- YOUR STATS SECTION IS UNCHANGED --- */}
+      {/* --- AAPKA STATS SECTION (KOI CHANGE NAHI) --- */}
       <section
         ref={statsRef}
         className="py-16 bg-white opacity-0 translate-y-8 transition-all duration-700"
@@ -104,7 +113,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
         </div>
       </section>
 
-      {/* --- YOUR FEATURED COLLEGES SECTION (UPDATED FOR FAVORITES) --- */}
+      {/* --- AAPKA FEATURED COLLEGES SECTION (UPDATED) --- */}
       <section
         ref={collegesRef}
         className="py-20 bg-gray-50 opacity-0 translate-y-8 transition-all duration-700"
@@ -120,7 +129,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
           </div>
           {filteredColleges.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* --- FAVORITES FEATURE ADDED HERE --- */}
+              {/* FIX: 'slice(0, 3)' ko 'slice(0, 6)' kar diya hai */}
               {filteredColleges.slice(0, 6).map((college) => (
                 <CollegeCard 
                   key={college.id} 
@@ -143,7 +152,33 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
         </div>
       </section>
 
-      {/* --- YOUR FOOTER IS UNCHANGED --- */}
+      {/* FIX: 'news' data ko display karne ka section add kiya hai */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Latest News & Updates</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Stay informed about admission dates, cut-offs, and more.
+            </p>
+          </div>
+          <div className="space-y-4 max-w-3xl mx-auto">
+            {news.map((item) => (
+              <a 
+                key={item.id} 
+                href={item.link} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block p-6 bg-gray-50 rounded-lg hover:bg-gray-100 border border-gray-200 transition-colors"
+              >
+                <h3 className="text-xl font-semibold text-indigo-700">{item.title}</h3>
+                <p className="mt-2 text-gray-600">{item.summary}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- AAPKA FOOTER (KOI CHANGE NAHI) --- */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -179,7 +214,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
         </div>
       </footer>
 
-      {/* --- YOUR CHATBOT IS UNCHANGED --- */}
+      {/* --- AAPKA CHATBOT (KOI CHANGE NAHI) --- */}
       {isChatOpen && <ChatBot onClose={() => setIsChatOpen(false)} />}
       <ChatIcon onClick={() => setIsChatOpen(true)} />
     </main>
