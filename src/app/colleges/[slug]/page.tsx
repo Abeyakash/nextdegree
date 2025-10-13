@@ -16,7 +16,6 @@ function formatUrl(url?: string) {
 }
 
 export default async function CollegePage({ params }: CollegePageProps) {
-  // Await the params in Next.js 15
   const { slug } = await params;
   const supabase = createClient();
 
