@@ -1,4 +1,3 @@
-// File: src/components/reviews/ReviewsList.tsx
 import { createClient } from '@/lib/supabase/server';
 import { Star } from 'lucide-react';
 
