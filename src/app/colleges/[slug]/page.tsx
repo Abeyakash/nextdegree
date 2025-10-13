@@ -10,9 +10,16 @@ interface CollegePageProps {
 // Helper to fix missing protocol in URLs
 function formatUrl(url?: string) {
   if (!url) return '#';
-  return url.startsWith('http://') || url.startsWith('https://')
-    ? url
-    : `https://${url}`;
+  
+  // Remove whitespace
+  const trimmed = url.trim();
+  
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  
+  // Add https:// if no protocol
+  return `https://${trimmed}`;
 }
 
 export default async function CollegePage({ params }: CollegePageProps) {
@@ -33,6 +40,10 @@ export default async function CollegePage({ params }: CollegePageProps) {
     typeof college.placements === 'string'
       ? JSON.parse(college.placements)
       : { avg: 'N/A', high: 'N/A', recruiters: [] };
+
+  // Format URLs properly
+  const applyUrl = formatUrl(college.website_url);
+  const brochureUrl = formatUrl(college.brochure_url);
 
   return (
     <main className="min-h-screen bg-gray-50 pt-24 pb-12">
@@ -77,7 +88,7 @@ export default async function CollegePage({ params }: CollegePageProps) {
             {/* Apply Now & Brochure */}
             <div className="flex gap-3">
               <a
-                href={formatUrl(college.website_url)}
+                href={applyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-all font-semibold"
@@ -85,7 +96,7 @@ export default async function CollegePage({ params }: CollegePageProps) {
                 Apply Now
               </a>
               <a
-                href={formatUrl(college.brochure_url)}
+                href={brochureUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="border-2 border-indigo-600 text-indigo-600 px-6 py-3 rounded-lg hover:bg-indigo-50 transition-all font-semibold"
@@ -194,7 +205,7 @@ export default async function CollegePage({ params }: CollegePageProps) {
                   <div>
                     <div className="text-sm text-gray-500">Website</div>
                     <a
-                      href={formatUrl(college.website_url)}
+                      href={applyUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-medium text-indigo-600 hover:underline"
