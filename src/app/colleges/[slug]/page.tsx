@@ -22,7 +22,7 @@ function formatUrl(url?: string) {
 
 export default async function CollegePage({ params }: CollegePageProps) {
   const { slug } = await params;
-  const supabase = await createClient(); // 👈 AWAIT ADD KIYA
+  const supabase = await createClient(); 
 
   try {
     // Fetch single college record by slug
