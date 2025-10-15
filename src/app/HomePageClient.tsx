@@ -8,7 +8,7 @@ import { ChatIcon } from '@/components/ChatIcon'
 import { ChatBot } from '@/components/ChatBot'
 import { College } from '@/data/colleges'
 
-// FIX 1: 'any' type ko hatakar ek proper type banaya hai
+// FIX 1: 'any' type ko hatakar ek proper type banaya hu
 interface NewsArticle {
   id: number;
   title: string;
@@ -16,21 +16,20 @@ interface NewsArticle {
   link: string;
 }
 
-// Props definition ko update kiya hai
 export default function HomePageClient({ initialColleges, userId, favoriteCollegeIds, news }: {
     initialColleges: College[];
     userId: string | null | undefined;
     favoriteCollegeIds: Set<number>;
-    news: NewsArticle[]; // Yahan naya type use kiya hai
+    news: NewsArticle[]; // 
 }) {
-  // --- AAPKA ORIGINAL STATE AUR REFS (KOI CHANGE NAHI) ---
+  // ---ORIGINAL STATE AUR REFS ---
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [query, setQuery] = useState('')
   const heroRef = useRef<HTMLDivElement>(null)
   const statsRef = useRef<HTMLDivElement>(null)
   const collegesRef = useRef<HTMLDivElement>(null)
 
-  // --- AAPKA ANIMATION LOGIC (KOI CHANGE NAHI) ---
+  // --- ANIMATION LOGIC ---
   useEffect(() => {
     const observerOptions = {
       threshold: 0.1,
@@ -49,7 +48,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
     return () => observer.disconnect()
   }, [])
 
-  // --- AAPKA SEARCH LOGIC (KOI CHANGE NAHI) ---
+  // --- SEARCH LOGIC ---
   const filteredColleges = initialColleges.filter(
     (college) =>
       college.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -62,7 +61,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
   return (
     <main className="min-h-screen bg-white">
 
-      {/* --- AAPKA HERO SECTION (KOI CHANGE NAHI) --- */}
+      {/* ---HERO SECTION --- */}
       <section
         ref={heroRef}
         className="bg-gradient-to-br from-indigo-50 via-purple-50 to-white py-20 opacity-0 translate-y-8 transition-all duration-700"
@@ -91,7 +90,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
         </div>
       </section>
 
-      {/* --- AAPKA STATS SECTION (KOI CHANGE NAHI) --- */}
+      {/* --- STATS SECTION--- */}
       <section
         ref={statsRef}
         className="py-16 bg-white opacity-0 translate-y-8 transition-all duration-700"
@@ -113,7 +112,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
         </div>
       </section>
 
-      {/* --- AAPKA FEATURED COLLEGES SECTION (UPDATED) --- */}
+      {/* --- FEATURED COLLEGES SECTION--- */}
       <section
         ref={collegesRef}
         className="py-20 bg-gray-50 opacity-0 translate-y-8 transition-all duration-700"
@@ -129,7 +128,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
           </div>
           {filteredColleges.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* FIX: 'slice(0, 3)' ko 'slice(0, 6)' kar diya hai */}
+              {/* FIX:slice(0, 6)' kar diya hai */}
               {filteredColleges.slice(0, 6).map((college) => (
                 <CollegeCard 
                   key={college.id} 
@@ -152,7 +151,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
         </div>
       </section>
 
-      {/* FIX: 'news' data ko display karne ka section add kiya hai */}
+      {/* FIX: 'news' data ko display karne ka section add kiya hu */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -178,7 +177,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
         </div>
       </section>
 
-      {/* --- AAPKA FOOTER (KOI CHANGE NAHI) --- */}
+      {/* -- FOOTER-- */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -214,7 +213,7 @@ export default function HomePageClient({ initialColleges, userId, favoriteColleg
         </div>
       </footer>
 
-      {/* --- AAPKA CHATBOT (KOI CHANGE NAHI) --- */}
+      {/* CHATBOT */}
       {isChatOpen && <ChatBot onClose={() => setIsChatOpen(false)} />}
       <ChatIcon onClick={() => setIsChatOpen(true)} />
     </main>

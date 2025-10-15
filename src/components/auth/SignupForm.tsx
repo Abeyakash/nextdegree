@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+// FIX: Use the correct helper function to create the client
+import { createClient } from '@/lib/supabase/client'; 
 
 export default function SignupForm() {
   const [name, setName] = useState('');
@@ -12,6 +13,8 @@ export default function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const router = useRouter();
+  // FIX: Initialize the client inside the component
+  const supabase = createClient(); 
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -19,16 +22,22 @@ export default function SignupForm() {
     setSuccessMessage(null);
 
     const { error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-      options: { data: { full_name: name } },
+      email,
+      password,
+      // This part is correct: it sends the name to be stored as user metadata
+      options: {
+        data: {
+          full_name: name,
+        },
+      },
     });
 
     if (error) {
       setError(error.message);
     } else {
       setSuccessMessage('Success! Check your email to verify your account.');
-      setTimeout(() => router.push('/auth/login'), 3000);
+      // Optional: Redirect to login page after a few seconds
+      setTimeout(() => router.push('/auth/login'), 3000); 
     }
   };
 

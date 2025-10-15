@@ -1,39 +1,42 @@
-import type { Metadata, Viewport } from 'next' // 1. Viewport is imported here
-import { Inter } from 'next/font/google'
-import './globals.css'
-import Header from '@/components/ui/layout/Header'
-import { CompareProvider } from '@/lib/compare-context'
+// File: src/app/layout.tsx
 
-const inter = Inter({ subsets: ['latin'] })
+import type { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import Header from '@/components/ui/layout/Header';
+import { CompareProvider } from '@/lib/compare-context';
+// Naya component import karein
+import AuthStatus from '@/components/ui/layout/AuthStatus';
 
-// 2. The viewport key has been removed from here
+const inter = Inter({ subsets: ['latin'] });
+
 export const metadata: Metadata = {
   title: 'NextDegree - Find Your Perfect College',
   description: 'Discover the best colleges in Mumbai Metropolitan Region',
-}
+};
 
-// 3. Viewport is now its own separate export
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1.0,
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
       <body className={`${inter.className} bg-gray-100`}>
         <CompareProvider>
           <div className="flex flex-col min-h-screen">
-            <Header />
+            {/* --- FIX YAHAN HAI --- */}
+            {/* Header ko ab AuthStatus component ek prop ke zariye pass kiya ja raha hai */}
+            <Header authStatus={<AuthStatus />} />
             <main className="flex-grow">{children}</main>
-            {/* You can add a Footer component here later */}
           </div>
         </CompareProvider>
       </body>
     </html>
-  )
+  );
 }

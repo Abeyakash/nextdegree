@@ -3,9 +3,9 @@
 import { useState } from "react"
 import Link from "next/link"
 import { GraduationCap, Menu, X } from "lucide-react"
-import AuthButtons from "./AuthButton" // Import the new component
 
-export default function Header() {
+// Header ab 'authStatus' naam ka ek prop lega
+export default function Header({ authStatus }: { authStatus: React.ReactNode }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleLinkClick = () => {
@@ -25,21 +25,18 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
-          {/* Logo */}
           <Link href="/" className="text-3xl font-extrabold text-blue-600 tracking-tight flex items-center">
             <GraduationCap className="w-8 h-8 mr-2" />
             NextDegree
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-10 items-center">{NavLinks}</nav>
 
-          {/* Desktop Auth Buttons */}
+          {/* Desktop Auth Buttons ko 'authStatus' prop se replace karein */}
           <div className="hidden md:block">
-            <AuthButtons />
+            {authStatus}
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2 text-gray-600 hover:text-blue-600 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -50,13 +47,13 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
       {isMenuOpen && (
         <div className="md:hidden absolute w-full bg-white shadow-xl">
           <nav className="flex flex-col p-4 border-t border-gray-100">
             {NavLinks}
             <div className="mt-4">
-              <AuthButtons />
+              {/* Mobile Auth Buttons ko bhi 'authStatus' prop se replace karein */}
+              {authStatus}
             </div>
           </nav>
         </div>

@@ -29,7 +29,7 @@ export async function toggleFavorite(collegeId: number, path: string) {
   revalidatePath(path);
 }
 
-// --- NEW: Add Review Action ---
+// --- Add Review Action ---
 export async function addReview(collegeId: number, formData: FormData) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -41,9 +41,7 @@ export async function addReview(collegeId: number, formData: FormData) {
   const rating = Number(formData.get('rating'));
   const comment = formData.get('comment') as string;
 
-  // Basic validation
   if (rating === 0 || !comment) {
-    // In a real app, you'd handle this error more gracefully
     return;
   }
 
@@ -56,15 +54,55 @@ export async function addReview(collegeId: number, formData: FormData) {
 
   if (error) {
     console.error('Error submitting review:', error);
-    // In a real app, you might redirect with an error message
     return;
   }
 
-  // Revalidate the college detail page to show the new review instantly
   const { data: college } = await supabase.from('colleges').select('slug').eq('id', collegeId).single();
   if (college) {
     revalidatePath(`/colleges/${college.slug}`);
   }
 }
 
-// --- Your other actions like password reset would also be in this file ---
+// --- Sign Out Action ---
+export async function signOut() {
+  const supabase = createClient();
+  await supabase.auth.signOut();
+  return redirect('/');
+}
+
+// --- Forgot Password Action ---
+export async function requestPasswordReset(formData: FormData) {
+  const email = formData.get('email') as string;
+  const supabase = createClient();
+  
+  const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`;
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: redirectUrl,
+  });
+
+  if (error) {
+    return redirect('/forgot-password?message=Error: Could not send reset link');
+  }
+  return redirect('/forgot-password?message=Password reset link has been sent.');
+}
+
+// --- Reset Password Action ---
+export async function updateUserPassword(formData: FormData) {
+  const password = formData.get('password') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+  const supabase = createClient();
+
+  if (password !== confirmPassword) {
+    return redirect('/reset-password?message=Error: Passwords do not match');
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: password });
+
+  if (error) {
+    return redirect('/reset-password?message=Error: Could not update password.');
+  }
+  
+  // The success redirect was also missing
+  return redirect('/auth/login?message=Password updated successfully.');
+} // <<< FIX: This closing brace '}' was missing.
