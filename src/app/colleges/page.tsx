@@ -1,14 +1,42 @@
-import { createClient } from '@/lib/supabase/server';
-import CollegeList from './CollegeList';
+import { createClient } from '@/lib/supabase/server'
+import CollegeList from './CollegeList'
 
 export default async function CollegesPage() {
-  const supabase = createClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  const { data: colleges } = await supabase.from('colleges').select('*');
-  const { data: favorites } = await supabase.from('favorites').select('college_id').eq('user_id', user?.id);
-  
-  const favoriteCollegeIds = new Set(favorites?.map(fav => fav.college_id));
+  // 🔥 MUST use await
+  const supabase = await createClient()
+
+  // Get logged-in user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // Get colleges
+  const { data: colleges, error: collegesError } =
+    await supabase.from('colleges').select('*')
+
+  if (collegesError) {
+    console.error('Colleges Fetch Error:', collegesError.message)
+  }
+
+  // Get favorites only if user exists
+  let favorites: { college_id: number }[] = []
+
+  if (user) {
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('college_id')
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('Favorites Fetch Error:', error.message)
+    }
+
+    favorites = data || []
+  }
+
+  const favoriteCollegeIds = new Set(
+    favorites.map((fav) => fav.college_id)
+  )
 
   return (
     <main className="min-h-screen bg-gray-50 pt-24">
@@ -20,5 +48,5 @@ export default async function CollegesPage() {
         />
       </div>
     </main>
-  );
+  )
 }
