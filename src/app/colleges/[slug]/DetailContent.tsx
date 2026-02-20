@@ -8,7 +8,6 @@ import { College } from '../../../data/colleges';
 import AddReviewForm from '@/components/reviews/AddReviewForm';
 import ReviewsList from '@/components/reviews/ReviewsList';
 
-// FIX: 'userId' prop ko add kiya gaya hai
 interface DetailContentProps {
     college: College;
     userId?: string | null;
@@ -18,7 +17,7 @@ export const DetailContent: React.FC<DetailContentProps> = ({ college, userId })
     const [activeTab, setActiveTab] = useState('Overview');
     const tabs = ['Overview', 'Courses & Fees', 'Placements', 'Admissions', 'Reviews'];
     
-    // FIX: Purane state (reviewCount) aur function (handleReviewAdded) ko hata diya gaya hai
+    // FIX: Purane state (reviewCount) aur function (handleReviewAdded) ko hata diya hu
     const [formName, setFormName] = useState('');
     const [formEmail, setFormEmail] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -70,12 +69,12 @@ export const DetailContent: React.FC<DetailContentProps> = ({ college, userId })
                     </div>
                 );
             case 'Admissions':
-                // FIX: Apostrophe (') ko '&apos;' se replace kiya gaya hai
+                
                 return (<p className="text-gray-700 text-lg">Admission process typically includes cut-off announcements, application deadlines, and document verification steps. Check the college&apos;s official website for the latest schedule.</p>);
             case 'Reviews':
-                // FIX: 'onReviewAdded' aur 'key' props hata diye gaye hain.
-                // Form ab sirf tab dikhega jab user logged in ho.
-                return (
+               
+                
+         return (
                     <div className="space-y-8">
                         {userId && <AddReviewForm collegeId={college.id} />}
                         <ReviewsList collegeId={college.id} />

@@ -1,6 +1,3 @@
-// src/data/colleges.ts
-
-// 1. Interface (Unchanged)
 export interface College {
   id: number;
   slug: string;
@@ -17,7 +14,6 @@ export interface College {
   image: string;
 }
 
-// 2. Data array with updated image paths
 export const colleges: College[] = [
   // --- Dahisar Colleges (Original) ---
   {
@@ -542,7 +538,6 @@ export const colleges: College[] = [
   }
 ];
 
-// 3. Helper function (Unchanged)
 export function getCollegeBySlug(slug: string): College | undefined {
   return colleges.find(college => college.slug === slug);
 }
