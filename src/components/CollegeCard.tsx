@@ -11,12 +11,16 @@ interface CollegeCardProps {
   college: College;
   userId?: string | null;
   isFavorited: boolean;
+  onViewDetails?: (college: College) => void;
 }
 
-export default function CollegeCard({ college, userId, isFavorited }: CollegeCardProps) {
+export default function CollegeCard({ college, userId, isFavorited, onViewDetails }: CollegeCardProps) {
   const { addToCompare, compareList } = useCompare();
   const isInCompare = compareList.some(c => c.id === college.id);
   const toggleFavoriteWithData = toggleFavorite.bind(null, college.id, '/colleges');
+  const handleViewDetails = () => {
+    onViewDetails?.(college);
+  };
 
   return (
     <div className="group bg-white rounded-xl shadow-lg border border-cyan-100 hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.01] overflow-hidden flex flex-col">
@@ -46,7 +50,11 @@ export default function CollegeCard({ college, userId, isFavorited }: CollegeCar
       <div className="p-6 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-4">
           <div>
-            <Link href={`/colleges/${college.slug}`} className="text-2xl font-bold text-gray-800 hover:text-cyan-700 transition-colors">
+            <Link
+              href={`/colleges/${college.slug}`}
+              className="text-2xl font-bold text-gray-800 hover:text-cyan-700 transition-colors"
+              onClick={handleViewDetails}
+            >
               {college.name}
             </Link>
             <p className="text-sm text-gray-500 flex items-center mt-1">
@@ -69,7 +77,11 @@ export default function CollegeCard({ college, userId, isFavorited }: CollegeCar
           </p>
         </div>
         <div className="mt-auto pt-6 flex items-center justify-between">
-          <Link href={`/colleges/${college.slug}`} className="inline-flex items-center text-cyan-700 hover:text-cyan-900 font-semibold transition-colors">
+          <Link
+            href={`/colleges/${college.slug}`}
+            className="inline-flex items-center text-cyan-700 hover:text-cyan-900 font-semibold transition-colors"
+            onClick={handleViewDetails}
+          >
             View Details <ChevronRight className="w-4 h-4 ml-1" />
           </Link>
           <button
