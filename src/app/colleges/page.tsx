@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import CollegeList from './CollegeList'
 
+export const dynamic = 'force-dynamic'
+
 export default async function CollegesPage() {
   // 🔥 MUST use await
   const supabase = await createClient()

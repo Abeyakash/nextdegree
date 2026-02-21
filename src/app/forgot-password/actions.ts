@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 
 export async function requestPasswordReset(formData: FormData) {
   const email = formData.get('email') as string;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Uses the Environment Variable for the redirect URL
   const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`;

@@ -19,9 +19,16 @@ export default function CollegeCard({ college, userId, isFavorited }: CollegeCar
   const toggleFavoriteWithData = toggleFavorite.bind(null, college.id, '/colleges');
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.01] overflow-hidden flex flex-col">
-      <div className="relative h-48 w-full">
-        <Image src={college.image} alt={college.name} fill className="object-cover" />
+    <div className="group bg-white rounded-xl shadow-lg border border-cyan-100 hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.01] overflow-hidden flex flex-col">
+      <div className="relative h-48 w-full overflow-hidden">
+        <Image
+          src={college.image}
+          alt={college.name}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/35 via-transparent to-transparent" />
         {userId && (
           <form action={toggleFavoriteWithData} className="absolute top-3 right-3">
             <button
@@ -39,7 +46,7 @@ export default function CollegeCard({ college, userId, isFavorited }: CollegeCar
       <div className="p-6 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-4">
           <div>
-            <Link href={`/colleges/${college.slug}`} className="text-2xl font-bold text-gray-800 hover:text-blue-600 transition-colors">
+            <Link href={`/colleges/${college.slug}`} className="text-2xl font-bold text-gray-800 hover:text-cyan-700 transition-colors">
               {college.name}
             </Link>
             <p className="text-sm text-gray-500 flex items-center mt-1">
@@ -62,13 +69,13 @@ export default function CollegeCard({ college, userId, isFavorited }: CollegeCar
           </p>
         </div>
         <div className="mt-auto pt-6 flex items-center justify-between">
-          <Link href={`/colleges/${college.slug}`} className="inline-flex items-center text-blue-600 hover:text-blue-800 font-semibold transition-colors">
+          <Link href={`/colleges/${college.slug}`} className="inline-flex items-center text-cyan-700 hover:text-cyan-900 font-semibold transition-colors">
             View Details <ChevronRight className="w-4 h-4 ml-1" />
           </Link>
           <button
             onClick={() => addToCompare(college)}
             disabled={isInCompare}
-            className={`px-4 py-2 rounded-md text-white font-semibold transition-colors ${isInCompare ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+            className={`px-4 py-2 rounded-md text-white font-semibold transition-colors ${isInCompare ? 'bg-gray-400 cursor-not-allowed' : 'bg-cyan-700 hover:bg-cyan-800'}`}
           >
             {isInCompare ? 'Added' : 'Add to Compare'}
           </button>

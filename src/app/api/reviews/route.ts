@@ -1,6 +1,28 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'; // <-- This is the stable import
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers';
+
+async function createRouteClient() {
+  const cookieStore = await cookies()
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          cookieStore.set({ name, value, ...options })
+        },
+        remove(name: string, options: CookieOptions) {
+          cookieStore.set({ name, value: '', ...options })
+        },
+      },
+    }
+  )
+}
 
 // GET function (to fetch reviews)
 export async function GET(request: NextRequest) {
@@ -11,7 +33,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'College ID is required' }, { status: 400 });
   }
 
-  const supabase = createRouteHandlerClient({ cookies });
+  const supabase = await createRouteClient();
   
   const { data, error } = await supabase
     .from('reviews')
@@ -29,7 +51,7 @@ export async function GET(request: NextRequest) {
 // POST function (to submit a review)
 export async function POST(request: NextRequest) {
   const { college_id, rating, review_text } = await request.json();
-  const supabase = createRouteHandlerClient({ cookies });
+  const supabase = await createRouteClient();
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) {

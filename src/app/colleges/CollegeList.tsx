@@ -12,6 +12,16 @@ interface CollegeListProps {
   favoriteCollegeIds: Set<number>;
 }
 
+const normalizeCourses = (courses: unknown): string[] => {
+  if (Array.isArray(courses)) {
+    return courses.filter((course): course is string => typeof course === 'string');
+  }
+  if (typeof courses === 'string') {
+    return courses.split(',').map((course) => course.trim()).filter(Boolean);
+  }
+  return [];
+};
+
 export default function CollegeList({ initialColleges, userId, favoriteCollegeIds }: CollegeListProps) {
   const [filteredColleges, setFilteredColleges] = useState<College[]>(initialColleges);
 
@@ -20,18 +30,22 @@ export default function CollegeList({ initialColleges, userId, favoriteCollegeId
     const lowercasedQuery = query.toLowerCase();
     
     const results = initialColleges.filter((college: College) => {
+      const normalizedCourses = normalizeCourses((college as unknown as { courses?: unknown }).courses);
+      const normalizedLocation = String((college as unknown as { location?: unknown }).location ?? '').toLowerCase();
+      const normalizedName = String((college as unknown as { name?: unknown }).name ?? '').toLowerCase();
+
       // Search Text Filter
       if (lowercasedQuery) {
-          const nameMatch = college.name.toLowerCase().includes(lowercasedQuery);
-          const courseMatch = college.courses.some(c => c.toLowerCase().includes(lowercasedQuery));
-          const locationMatch = college.location.toLowerCase().includes(lowercasedQuery);
+          const nameMatch = normalizedName.includes(lowercasedQuery);
+          const courseMatch = normalizedCourses.some((c) => c.toLowerCase().includes(lowercasedQuery));
+          const locationMatch = normalizedLocation.includes(lowercasedQuery);
           if (!nameMatch && !courseMatch && !locationMatch) {
               return false;
           }
       }
 
       // Dropdown Filters
-      if (filters.location && filters.location !== 'All' && college.location !== filters.location) {
+      if (filters.location && filters.location !== 'All' && String(college.location) !== filters.location) {
         return false;
       }
       
@@ -46,7 +60,7 @@ export default function CollegeList({ initialColleges, userId, favoriteCollegeId
         return false;
       }
       
-      if (filters.course && filters.course !== 'All' && !college.courses.includes(filters.course)) {
+      if (filters.course && filters.course !== 'All' && !normalizedCourses.includes(filters.course)) {
         return false;
       }
 
@@ -57,7 +71,9 @@ export default function CollegeList({ initialColleges, userId, favoriteCollegeId
   }, [initialColleges]);
   // --- END OF FIX ---
 
-  const allCourses = Array.from(new Set(initialColleges.flatMap((c: College) => c.courses))).sort();
+  const allCourses = Array.from(
+    new Set(initialColleges.flatMap((c: College) => normalizeCourses((c as unknown as { courses?: unknown }).courses)))
+  ).sort();
   const allLocations = Array.from(new Set(initialColleges.map(c => c.location))).sort();
   const allRatings = [4.0, 4.5]; // Example ratings
   const feesRanges = ['0-30000', '30001-60000', '60001-150000']; // Example fee ranges

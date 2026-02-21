@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 
 // --- Favorite Action ---
 export async function toggleFavorite(collegeId: number, path: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -31,7 +31,7 @@ export async function toggleFavorite(collegeId: number, path: string) {
 
 // --- Add Review Action ---
 export async function addReview(collegeId: number, formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -65,7 +65,7 @@ export async function addReview(collegeId: number, formData: FormData) {
 
 // --- Sign Out Action ---
 export async function signOut() {
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.auth.signOut();
   return redirect('/');
 }
@@ -73,7 +73,7 @@ export async function signOut() {
 // --- Forgot Password Action ---
 export async function requestPasswordReset(formData: FormData) {
   const email = formData.get('email') as string;
-  const supabase = createClient();
+  const supabase = await createClient();
   
   const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`;
 
@@ -91,7 +91,7 @@ export async function requestPasswordReset(formData: FormData) {
 export async function updateUserPassword(formData: FormData) {
   const password = formData.get('password') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   if (password !== confirmPassword) {
     return redirect('/reset-password?message=Error: Passwords do not match');

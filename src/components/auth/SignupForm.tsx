@@ -12,12 +12,15 @@ export default function SignupForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   // FIX: Initialize the client inside the component
   const supabase = createClient(); 
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setError(null);
     setSuccessMessage(null);
 
@@ -34,6 +37,7 @@ export default function SignupForm() {
 
     if (error) {
       setError(error.message);
+      setIsSubmitting(false);
     } else {
       setSuccessMessage('Success! Check your email to verify your account.');
       // Optional: Redirect to login page after a few seconds
@@ -45,7 +49,7 @@ export default function SignupForm() {
     <div className="w-full max-w-md">
       <form
         onSubmit={handleSignup}
-        className="bg-white p-8 rounded-2xl shadow-2xl space-y-6 transition-all duration-300 hover:shadow-blue-200"
+        className="bg-white p-8 rounded-2xl shadow-2xl space-y-6 transition-all duration-300 hover:shadow-cyan-200 border border-cyan-100"
       >
         <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-6">
           Create Your Account
@@ -59,12 +63,12 @@ export default function SignupForm() {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full p-3 pt-6 text-gray-900 bg-transparent border-2 border-gray-300 rounded-lg outline-none peer focus:border-blue-500 transition-colors"
+            className="w-full p-3 pt-6 text-gray-900 bg-transparent border-2 border-gray-300 rounded-lg outline-none peer focus:border-cyan-600 transition-colors"
             placeholder=" "
           />
           <label
             htmlFor="name"
-            className="absolute left-3 -translate-y-3 top-3 text-xs text-gray-500 transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:-translate-y-0 peer-focus:top-3 peer-focus:text-xs peer-focus:-translate-y-3 peer-focus:text-blue-600"
+            className="absolute left-3 -translate-y-3 top-3 text-xs text-gray-500 transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:-translate-y-0 peer-focus:top-3 peer-focus:text-xs peer-focus:-translate-y-3 peer-focus:text-cyan-700"
           >
             Full Name
           </label>
@@ -78,12 +82,12 @@ export default function SignupForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 pt-6 text-gray-900 bg-transparent border-2 border-gray-300 rounded-lg outline-none peer focus:border-blue-500 transition-colors"
+            className="w-full p-3 pt-6 text-gray-900 bg-transparent border-2 border-gray-300 rounded-lg outline-none peer focus:border-cyan-600 transition-colors"
             placeholder=" "
           />
           <label
             htmlFor="email"
-            className="absolute left-3 -translate-y-3 top-3 text-xs text-gray-500 transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:-translate-y-0 peer-focus:top-3 peer-focus:text-xs peer-focus:-translate-y-3 peer-focus:text-blue-600"
+            className="absolute left-3 -translate-y-3 top-3 text-xs text-gray-500 transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:-translate-y-0 peer-focus:top-3 peer-focus:text-xs peer-focus:-translate-y-3 peer-focus:text-cyan-700"
           >
             Email Address
           </label>
@@ -97,12 +101,12 @@ export default function SignupForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 pt-6 text-gray-900 bg-transparent border-2 border-gray-300 rounded-lg outline-none peer focus:border-blue-500 transition-colors"
+            className="w-full p-3 pt-6 text-gray-900 bg-transparent border-2 border-gray-300 rounded-lg outline-none peer focus:border-cyan-600 transition-colors"
             placeholder=" "
           />
           <label
             htmlFor="password"
-            className="absolute left-3 -translate-y-3 top-3 text-xs text-gray-500 transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:-translate-y-0 peer-focus:top-3 peer-focus:text-xs peer-focus:-translate-y-3 peer-focus:text-blue-600"
+            className="absolute left-3 -translate-y-3 top-3 text-xs text-gray-500 transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:-translate-y-0 peer-focus:top-3 peer-focus:text-xs peer-focus:-translate-y-3 peer-focus:text-cyan-700"
           >
             Password
           </label>
@@ -113,15 +117,16 @@ export default function SignupForm() {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+          disabled={isSubmitting}
+          className="w-full bg-cyan-700 text-white p-3 rounded-lg font-semibold hover:bg-cyan-800 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          Sign Up
+          {isSubmitting ? 'Creating Account...' : 'Sign Up'}
         </button>
       </form>
       <div className="text-sm text-center mt-6">
         <p className="text-gray-600">
           Already have an account?
-          <Link href="/auth/login" className="font-medium text-blue-600 hover:underline ml-1">
+          <Link href="/auth/login" className="font-medium text-cyan-700 hover:underline ml-1">
             Sign in
           </Link>
         </p>

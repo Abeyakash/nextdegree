@@ -13,7 +13,7 @@ interface ReviewWithUser {
 }
 
 export default async function ReviewsList({ collegeId }: { collegeId: number }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: reviews } = await supabase
     .from('reviews')
     .select('*, user:users(email)')
