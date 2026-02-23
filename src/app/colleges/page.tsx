@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import CollegeList from './CollegeList'
 import { colleges as fallbackColleges } from '@/data/colleges'
+import { sanitizeCollegeList } from '@/lib/college-validation'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,12 +38,13 @@ export default async function CollegesPage({ searchParams }: CollegesPageProps) 
 
   const favoriteCollegeIds = new Set(favorites.map((fav) => fav.college_id))
   const resolvedColleges = colleges && colleges.length > 0 ? colleges : fallbackColleges
+  const visibleColleges = sanitizeCollegeList(resolvedColleges as unknown[])
 
   return (
     <main className="min-h-screen bg-gray-50 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <CollegeList
-          initialColleges={resolvedColleges}
+          initialColleges={visibleColleges}
           userId={user?.id}
           favoriteCollegeIds={favoriteCollegeIds}
           initialQuery={initialQuery}

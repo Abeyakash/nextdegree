@@ -41,18 +41,14 @@ const normalize = (value: string) => value.toLowerCase().trim()
 
 const findCollege = (query: string) => {
   const lower = normalize(query)
-  return colleges.find(
-    (college) =>
-      lower.includes(college.name.toLowerCase()) ||
-      lower.includes(college.slug.toLowerCase())
-  )
+  return colleges.find((college) => lower.includes(college.name.toLowerCase()) || lower.includes(college.slug.toLowerCase()))
 }
 
 const makeCodeReply = (topic: string): Message => {
   if (topic.includes('api')) {
     return {
       sender: 'bot',
-      text: 'Yeh Next.js API route ka simple template hai. Isme GET handler ready hai:',
+      text: 'Yeh Next.js API route ka simple template hai:',
       codeSnippet: {
         language: 'ts',
         code: "import { NextResponse } from 'next/server'\n\nexport async function GET() {\n  return NextResponse.json({ ok: true, message: 'API working' })\n}",
@@ -64,49 +60,52 @@ const makeCodeReply = (topic: string): Message => {
   if (topic.includes('supabase')) {
     return {
       sender: 'bot',
-      text: 'Supabase se records fetch karne ka compact example:',
+      text: 'Supabase fetch ka compact example:',
       codeSnippet: {
         language: 'ts',
-        code: "const supabase = createClient()\nconst { data, error } = await supabase\n  .from('colleges')\n  .select('*')\n  .order('rating', { ascending: false })\n\nif (error) console.error(error)",
+        code: "const supabase = createClient()\nconst { data, error } = await supabase\n  .from('colleges')\n  .select('*')\n  .order('rating', { ascending: false })",
       },
-      suggestions: ['API route code', 'React state example', 'Validation code'],
-    }
-  }
-
-  if (topic.includes('form')) {
-    return {
-      sender: 'bot',
-      text: 'Form submit ka clean React pattern:',
-      codeSnippet: {
-        language: 'tsx',
-        code: "const [loading, setLoading] = useState(false)\n\nconst handleSubmit = async (e: React.FormEvent) => {\n  e.preventDefault()\n  setLoading(true)\n  try {\n    // call API/server action\n  } finally {\n    setLoading(false)\n  }\n}",
-      },
-      suggestions: ['Validation code', 'API route code', 'Supabase query example'],
+      suggestions: ['API route code', 'Validation code', 'Form submit code'],
     }
   }
 
   return {
     sender: 'bot',
-    text: 'Code help ke liye aap yeh puch sakte ho: API route, React state, Supabase query, form validation.',
+    text: 'Code help ke liye aap API route, React state, Supabase query, ya form validation puch sakte ho.',
     suggestions: ['API route code', 'Supabase query example', 'Form submit code'],
+  }
+}
+
+async function askAssistantApi(question: string): Promise<Message | null> {
+  try {
+    const response = await fetch('/api/assistant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: question }),
+    })
+
+    if (!response.ok) return null
+    const data = (await response.json()) as { text?: string; suggestions?: string[] }
+    if (!data.text) return null
+
+    return {
+      sender: 'bot',
+      text: data.text,
+      suggestions: Array.isArray(data.suggestions) ? data.suggestions.slice(0, 4) : undefined,
+    }
+  } catch {
+    return null
   }
 }
 
 export const ChatBot = ({ onClose }: { onClose: () => void }) => {
   const initialMessage: Message = {
     sender: 'bot',
-    text: 'Namaste! Main NextDegree assistant hoon. College info, compare, fees, ratings aur coding help dono de sakta hoon.',
-    suggestions: [
-      'Best colleges Mumbai',
-      'Affordable colleges',
-      'HR College details',
-      'API route code',
-    ],
+    text: 'Namaste! Main NextDegree assistant hoon. College, coding, career, ya general query kuch bhi pucho.',
+    suggestions: ['Top colleges Mumbai', 'Affordable colleges', 'Career guidance', 'API route code'],
   }
 
-  const [messages, setMessages] = useState<Message[]>([
-    initialMessage,
-  ])
+  const [messages, setMessages] = useState<Message[]>([initialMessage])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
@@ -125,16 +124,10 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
     return () => document.removeEventListener('keydown', onEscape)
   }, [onClose])
 
-  const generateResponse = (rawInput: string): Message => {
+  const generateLocalResponse = (rawInput: string): Message | null => {
     const inputLower = normalize(rawInput)
 
-    if (
-      inputLower.includes('code') ||
-      inputLower.includes('api') ||
-      inputLower.includes('react') ||
-      inputLower.includes('supabase') ||
-      inputLower.includes('form')
-    ) {
+    if (inputLower.includes('code') || inputLower.includes('api') || inputLower.includes('react') || inputLower.includes('supabase')) {
       return makeCodeReply(inputLower)
     }
 
@@ -142,7 +135,6 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
     if (compareMatch) {
       const first = findCollege(compareMatch[1])
       const second = findCollege(compareMatch[2])
-
       if (first && second) {
         return {
           sender: 'bot',
@@ -162,78 +154,38 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
         sender: 'bot',
         text: `Yeh rahi ${mentioned.name} ki quick profile:`,
         collegeCard: mentioned,
-        suggestions: [
-          `${mentioned.name} admission process`,
-          `${mentioned.name} placements`,
-          'Compare with another college',
-        ],
+        suggestions: [`${mentioned.name} admission process`, `${mentioned.name} placements`, 'Compare with another college'],
       }
     }
 
-    if (inputLower.includes('best') || inputLower.includes('top')) {
-      const top = [...colleges].sort((a, b) => b.rating - a.rating).slice(0, 3)
-      return {
-        sender: 'bot',
-        text: top.map((c, i) => `${i + 1}. ${c.name} - ${c.rating}/5`).join('\n'),
-        suggestions: top.map((c) => c.name),
-      }
-    }
+    return null
+  }
 
-    if (inputLower.includes('cheap') || inputLower.includes('affordable') || inputLower.includes('sasta')) {
-      const lowest = [...colleges].sort((a, b) => a.fees - b.fees).slice(0, 3)
-      return {
-        sender: 'bot',
-        text: lowest.map((c, i) => `${i + 1}. ${c.name} - Rs. ${c.fees.toLocaleString()}/year`).join('\n'),
-        suggestions: lowest.map((c) => c.name),
-      }
-    }
+  const generateResponse = async (rawInput: string): Promise<Message> => {
+    const local = generateLocalResponse(rawInput)
+    if (local) return local
 
-    if (inputLower.includes('admission') || inputLower.includes('apply')) {
-      return {
-        sender: 'bot',
-        text:
-          'Typical flow: form fill -> document upload -> merit list -> fee payment -> confirmation. College specific process chahiye to college ka naam bhejo.',
-        suggestions: ['HR College admission', 'Jai Hind admission', 'Top colleges Mumbai'],
-      }
-    }
-
-    if (inputLower.includes('placement') || inputLower.includes('job')) {
-      const top = [...colleges].sort((a, b) => b.rating - a.rating).slice(0, 3)
-      return {
-        sender: 'bot',
-        text: `Placement focus ke liye yeh 3 dekh sakte ho:\n${top.map((c) => `- ${c.name}`).join('\n')}`,
-        suggestions: top.map((c) => c.name),
-      }
-    }
-
-    if (inputLower.includes('hello') || inputLower.includes('hi') || inputLower.includes('hey')) {
-      return {
-        sender: 'bot',
-        text: 'Hello! Aap college recommendation chahte ho ya coding help?',
-        suggestions: ['Top colleges', 'Affordable colleges', 'API route code'],
-      }
-    }
+    const remote = await askAssistantApi(rawInput)
+    if (remote) return remote
 
     return {
       sender: 'bot',
-      text: 'Main help kar sakta hoon: college details, compare, admissions, placements, aur code snippets.',
-      suggestions: ['Top colleges', 'Compare colleges', 'Supabase query example'],
+      text: 'Main help kar sakta hoon: college details, admission, compare, coding, aur general queries. Please try once more.',
+      suggestions: ['Top colleges', 'Admission process', 'Coding help'],
     }
   }
 
-  const sendMessage = (raw?: string) => {
+  const sendMessage = async (raw?: string) => {
     const value = (raw ?? input).trim()
-    if (!value) return
+    if (!value || isTyping) return
 
     setMessages((prev) => [...prev, { sender: 'user', text: value }])
     setIsTyping(true)
     setInput('')
 
-    setTimeout(() => {
-      const response = generateResponse(value)
-      setMessages((prev) => [...prev, response])
-      setIsTyping(false)
-    }, 500)
+    const response = await generateResponse(value)
+    setMessages((prev) => [...prev, response])
+    setIsTyping(false)
   }
 
   const copyCode = async (index: number, code: string) => {
@@ -265,7 +217,6 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
       webkitSpeechRecognition?: VoiceRecognitionCtor
     }
     const SpeechRecognition = browserWindow.SpeechRecognition || browserWindow.webkitSpeechRecognition
-
     if (!SpeechRecognition) return
 
     const recognition = new SpeechRecognition()
@@ -304,11 +255,11 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
       </div>
 
       <div className="px-4 pt-3 pb-2 border-b border-slate-100 flex gap-2 flex-wrap bg-slate-50">
-        {['Top colleges', 'Affordable colleges', 'Compare colleges', 'API route code'].map((topic) => (
+        {['Top colleges', 'Affordable colleges', 'Career guidance', 'API route code'].map((topic) => (
           <button
             key={topic}
             type="button"
-            onClick={() => sendMessage(topic)}
+            onClick={() => void sendMessage(topic)}
             className="text-xs px-2.5 py-1 rounded-full bg-white border border-amber-200 text-amber-700 hover:bg-amber-50"
           >
             {topic}
@@ -339,10 +290,7 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
                   <div className="flex items-center"><DollarSign className="w-4 h-4 mr-2 text-zinc-700" />Rs. {message.collegeCard.fees.toLocaleString()}/year</div>
                   <div className="flex items-center"><TrendingUp className="w-4 h-4 mr-2 text-zinc-700" />Rating: {message.collegeCard.rating}/5</div>
                 </div>
-                <Link
-                  href={`/colleges/${message.collegeCard.slug}`}
-                  className="mt-3 block text-center w-full bg-black text-white py-2 rounded-lg hover:bg-zinc-800 transition-colors text-sm font-medium"
-                >
+                <Link href={`/colleges/${message.collegeCard.slug}`} className="mt-3 block text-center w-full bg-black text-white py-2 rounded-lg hover:bg-zinc-800 transition-colors text-sm font-medium">
                   View Full Details
                 </Link>
               </div>
@@ -354,7 +302,7 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
                   <div className="inline-flex items-center gap-2"><Code2 className="w-4 h-4" /> {message.codeSnippet.language}</div>
                   <button
                     type="button"
-                    onClick={() => copyCode(i, message.codeSnippet!.code)}
+                    onClick={() => void copyCode(i, message.codeSnippet!.code)}
                     className="inline-flex items-center gap-1 rounded bg-slate-800 px-2 py-1 hover:bg-slate-700"
                   >
                     {copiedIndex === i ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -370,7 +318,7 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
                 {message.suggestions.map((suggestion) => (
                   <button
                     key={`${suggestion}-${i}`}
-                    onClick={() => sendMessage(suggestion)}
+                    onClick={() => void sendMessage(suggestion)}
                     className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full text-xs hover:bg-amber-100 transition-colors border border-amber-200 font-medium"
                   >
                     {suggestion}
@@ -388,7 +336,6 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
                 <div className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"></div>
                 <div className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"></div>
                 <div className="w-2 h-2 bg-amber-600 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                <div className="w-2 h-2 bg-zinc-700 rounded-full animate-bounce [animation-delay:0.4s]"></div>
               </div>
             </div>
           </div>
@@ -401,9 +348,11 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') void sendMessage()
+          }}
           className="flex-1 px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-amber-600 transition-colors"
-          placeholder="Ask about colleges or code snippets..."
+          placeholder="Ask anything..."
         />
         <button
           onClick={startVoiceInput}
@@ -413,7 +362,7 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
           <Mic className="w-5 h-5" />
         </button>
         <button
-          onClick={() => sendMessage()}
+          onClick={() => void sendMessage()}
           className="ml-2 bg-gradient-to-r from-black to-zinc-800 text-white p-3 rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
           disabled={!input.trim()}
           aria-label="Send message"

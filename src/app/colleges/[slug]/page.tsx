@@ -29,7 +29,8 @@ function parseCourses(input: unknown, fallback: string[] = []): string[] {
 function normalizeText(value: string): string {
   return value
     .replace(/â‚¹/g, 'Rs. ')
-    .replace(/â˜…/g, '★')
+    .replace(/₹/g, 'Rs. ')
+    .replace(/’/g, "'")
     .replace(/\s+/g, ' ')
     .trim()
 }
@@ -123,6 +124,15 @@ export default async function CollegePage({ params }: CollegePageProps) {
     fees: Number(college?.fees ?? fallbackCollege?.fees ?? 0),
     courses: parseCourses(college?.courses, fallbackCollege?.courses ?? []),
     image: college?.image ?? fallbackCollege?.image,
+  }
+
+  const normalizedName = mergedCollege.name.toLowerCase()
+  if (
+    normalizedName.includes('demo') ||
+    normalizedName.includes('test') ||
+    normalizedName.includes('sample')
+  ) {
+    notFound()
   }
 
   const placements = parsePlacements(college?.placements, fallbackCollege?.placements)
@@ -346,3 +356,5 @@ export default async function CollegePage({ params }: CollegePageProps) {
     </main>
   )
 }
+
+

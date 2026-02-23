@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:data": "node scripts/validate-colleges.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",

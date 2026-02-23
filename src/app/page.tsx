@@ -1,6 +1,8 @@
 // src/app/page.tsx
 import { createClient } from '@/lib/supabase/server';
 import HomePageClient from './HomePageClient';
+import { colleges as fallbackColleges } from '@/data/colleges';
+import { sanitizeCollegeList } from '@/lib/college-validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +20,9 @@ export default async function HomePage() {
       console.error("Error fetching colleges:", error);
     }
 
+    const sourceColleges = colleges && colleges.length > 0 ? colleges : fallbackColleges
+    const visibleColleges = sanitizeCollegeList(sourceColleges as unknown[])
+
     const { data: favorites } = user
       ? await supabase.from('favorites').select('college_id').eq('user_id', user.id)
       : { data: [] };
@@ -32,7 +37,7 @@ export default async function HomePage() {
 
     return (
       <HomePageClient
-        initialColleges={colleges || []}
+        initialColleges={visibleColleges}
         userId={user?.id}
         favoriteCollegeIds={favoriteCollegeIds}
         news={news || []}

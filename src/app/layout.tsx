@@ -5,6 +5,7 @@ import Header from '@/components/ui/layout/Header';
 import { CompareProvider } from '@/lib/compare-context';
 import AuthStatus from '@/components/ui/layout/AuthStatus';
 import CursorAura from '@/components/ui/CursorAura';
+import GlobalAssistant from '@/components/GlobalAssistant';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({
             <Header authStatus={<AuthStatus />} />
             <main className="flex-grow">{children}</main>
           </div>
+          <GlobalAssistant />
         </CompareProvider>
       </body>
     </html>

@@ -5,8 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import CollegeCard from '@/components/CollegeCard'
 import { Button } from '@/components/ui/Button'
-import { ChatIcon } from '@/components/ChatIcon'
-import { ChatBot } from '@/components/ChatBot'
+import { openGlobalAssistant } from '@/components/GlobalAssistant'
 import { College } from '@/data/colleges'
 import {
   History,
@@ -70,7 +69,6 @@ export default function HomePageClient({
   news: NewsArticle[]
 }) {
   const router = useRouter()
-  const [isChatOpen, setIsChatOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('relevance')
   const [recentSearches, setRecentSearches] = useState<string[]>([])
@@ -368,7 +366,7 @@ export default function HomePageClient({
           )}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="outline" size="lg" onClick={() => setIsChatOpen(true)}>Get Course Guidance</Button>
+            <Button variant="outline" size="lg" onClick={() => openGlobalAssistant()}>Get Course Guidance</Button>
             <Link href="/compare">
               <Button variant="secondary" size="lg">Compare Colleges</Button>
             </Link>
@@ -648,8 +646,6 @@ export default function HomePageClient({
         </button>
       )}
 
-      {isChatOpen && <ChatBot onClose={() => setIsChatOpen(false)} />}
-      <ChatIcon onClick={() => setIsChatOpen(true)} />
     </main>
   )
 }
