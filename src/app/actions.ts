@@ -103,6 +103,5 @@ export async function updateUserPassword(formData: FormData) {
     return redirect('/reset-password?message=Error: Could not update password.');
   }
   
-  // The success redirect was also missing
   return redirect('/auth/login?message=Password updated successfully.');
-} // <<< FIX: This closing brace '}' was missing.
+}

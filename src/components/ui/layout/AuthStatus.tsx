@@ -13,7 +13,6 @@ export default async function AuthStatus() {
       error,
     } = await supabase.auth.getUser()
 
-    // Agar real error ho (network ya config issue)
     if (error && error.message !== 'Auth session missing!') {
       console.error('Supabase Auth Error:', error.message)
     }
@@ -47,14 +46,14 @@ export default async function AuthStatus() {
     <div className="flex items-center gap-4">
       <Link
         href="/auth/login"
-        className="text-gray-600 font-medium hover:text-blue-600 transition-colors"
+        className="text-gray-600 font-medium hover:text-amber-700 transition-colors"
       >
         Login
       </Link>
 
       <Link
         href="/auth/signup"
-        className="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors"
+        className="bg-black text-white px-4 py-2 rounded-md font-semibold hover:bg-amber-700 transition-colors"
       >
         Sign Up
       </Link>

@@ -10,6 +10,7 @@ interface CollegeListProps {
   initialColleges: College[];
   userId: string | null | undefined;
   favoriteCollegeIds: Set<number>;
+  initialQuery?: string;
 }
 
 const normalizeCourses = (courses: unknown): string[] => {
@@ -22,30 +23,37 @@ const normalizeCourses = (courses: unknown): string[] => {
   return [];
 };
 
-export default function CollegeList({ initialColleges, userId, favoriteCollegeIds }: CollegeListProps) {
+export default function CollegeList({
+  initialColleges,
+  userId,
+  favoriteCollegeIds,
+  initialQuery = '',
+}: CollegeListProps) {
   const [filteredColleges, setFilteredColleges] = useState<College[]>(initialColleges);
 
-  // --- FIX YAHAN HAI ---
   const handleHeroSearch = useCallback((query: string, filters: Filters) => {
-    const lowercasedQuery = query.toLowerCase();
+    const lowercasedQuery = query.trim().toLowerCase();
     
     const results = initialColleges.filter((college: College) => {
       const normalizedCourses = normalizeCourses((college as unknown as { courses?: unknown }).courses);
-      const normalizedLocation = String((college as unknown as { location?: unknown }).location ?? '').toLowerCase();
-      const normalizedName = String((college as unknown as { name?: unknown }).name ?? '').toLowerCase();
+      const normalizedCoursesLower = normalizedCourses.map((course) => course.toLowerCase());
+      const normalizedLocation = String((college as unknown as { location?: unknown }).location ?? '').trim().toLowerCase();
+      const normalizedName = String((college as unknown as { name?: unknown }).name ?? '').trim().toLowerCase();
 
-      // Search Text Filter
       if (lowercasedQuery) {
-          const nameMatch = normalizedName.includes(lowercasedQuery);
-          const courseMatch = normalizedCourses.some((c) => c.toLowerCase().includes(lowercasedQuery));
-          const locationMatch = normalizedLocation.includes(lowercasedQuery);
-          if (!nameMatch && !courseMatch && !locationMatch) {
-              return false;
-          }
+        const nameMatch = normalizedName.includes(lowercasedQuery);
+        const courseMatch = normalizedCoursesLower.some((course) => course.includes(lowercasedQuery));
+        const locationMatch = normalizedLocation.includes(lowercasedQuery);
+        if (!nameMatch && !courseMatch && !locationMatch) {
+          return false;
+        }
       }
 
-      // Dropdown Filters
-      if (filters.location && filters.location !== 'All' && String(college.location) !== filters.location) {
+      if (
+        filters.location &&
+        filters.location !== 'All' &&
+        !normalizedLocation.includes(filters.location.trim().toLowerCase())
+      ) {
         return false;
       }
       
@@ -60,7 +68,11 @@ export default function CollegeList({ initialColleges, userId, favoriteCollegeId
         return false;
       }
       
-      if (filters.course && filters.course !== 'All' && !normalizedCourses.includes(filters.course)) {
+      if (
+        filters.course &&
+        filters.course !== 'All' &&
+        !normalizedCoursesLower.some((course) => course.includes(filters.course.trim().toLowerCase()))
+      ) {
         return false;
       }
 
@@ -69,14 +81,13 @@ export default function CollegeList({ initialColleges, userId, favoriteCollegeId
     
     setFilteredColleges(results);
   }, [initialColleges]);
-  // --- END OF FIX ---
 
   const allCourses = Array.from(
     new Set(initialColleges.flatMap((c: College) => normalizeCourses((c as unknown as { courses?: unknown }).courses)))
   ).sort();
   const allLocations = Array.from(new Set(initialColleges.map(c => c.location))).sort();
-  const allRatings = [4.0, 4.5]; // Example ratings
-  const feesRanges = ['0-30000', '30001-60000', '60001-150000']; // Example fee ranges
+  const allRatings = [4.0, 4.5];
+  const feesRanges = ['0-30000', '30001-60000', '60001-150000'];
 
   return (
     <>
@@ -86,12 +97,13 @@ export default function CollegeList({ initialColleges, userId, favoriteCollegeId
         locations={allLocations} 
         ratings={allRatings} 
         feesRanges={feesRanges} 
+        initialQuery={initialQuery}
       />
       <CompareTable />
       <p className="text-lg text-gray-600 mb-6 mt-6 font-semibold">
         Showing {filteredColleges.length} result{filteredColleges.length !== 1 ? 's' : ''}
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
         {filteredColleges.map((college: College) => (
           <CollegeCard
             key={college.id}

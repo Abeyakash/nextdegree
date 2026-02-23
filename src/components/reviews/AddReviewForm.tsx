@@ -1,6 +1,5 @@
 'use client';
 
-// FIX 1: 'useRef' ko yahan import karein
 import { useState, useRef } from 'react';
 import { addReview } from '@/app/actions';
 import { Star } from 'lucide-react';
@@ -8,19 +7,15 @@ import { Star } from 'lucide-react';
 export default function AddReviewForm({ collegeId }: { collegeId: number }) {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
-  const formRef = useRef<HTMLFormElement>(null); // Form ko reset karne ke liye
+  const formRef = useRef<HTMLFormElement>(null);
 
-  // Server action ko collegeId ke saath bind karein
   const addReviewWithId = addReview.bind(null, collegeId);
 
   return (
-    // 'action' attribute mein server action ko call karein
     <form 
       ref={formRef}
-      // FIX 2: 'formData' ko 'FormData' type dein
       action={async (formData: FormData) => {
         await addReviewWithId(formData);
-        // Form submit hone ke baad use reset kar dein
         formRef.current?.reset();
         setRating(0);
       }} 
@@ -56,14 +51,14 @@ export default function AddReviewForm({ collegeId }: { collegeId: number }) {
           name="comment"
           rows={4}
           required
-          className="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+          className="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:ring-black focus:border-black"
           placeholder="Share your experience with this college..."
         ></textarea>
       </div>
       <button
         type="submit"
         disabled={rating === 0}
-        className="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:bg-gray-400"
+        className="w-full bg-black text-white p-3 rounded-lg font-semibold hover:bg-zinc-800 transition-colors disabled:bg-gray-400"
       >
         Submit Review
       </button>

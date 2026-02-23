@@ -541,3 +541,158 @@ export const colleges: College[] = [
 export function getCollegeBySlug(slug: string): College | undefined {
   return colleges.find(college => college.slug === slug);
 }
+
+export interface CollegeDetails {
+  officialWebsite: string;
+  admissionLink: string;
+  university: string;
+  accreditation: string;
+  admissionMode: string;
+  contactEmail: string;
+  contactPhone: string;
+  popularPrograms: string[];
+}
+
+const mumbaiUniversityAdmissionPortal = 'https://muugadmission.samarth.edu.in/'
+
+const collegeDirectory: Record<string, Partial<CollegeDetails>> = {
+  'st-xaviers-college': {
+    officialWebsite: 'https://xaviers.edu/',
+    admissionLink: 'https://xaviers.edu/main/index.php/admissions/',
+    accreditation: 'NAAC A+',
+    admissionMode: 'Merit based + entrance for selected programs',
+    contactEmail: 'principal@xaviers.edu',
+    contactPhone: '+91-22-22620661',
+  },
+  'narsee-monjee-college': {
+    officialWebsite: 'https://nmcollege.in/',
+    admissionLink: 'https://nmcollege.in/admissions/',
+    accreditation: 'NAAC A',
+    contactEmail: 'office@nmcollege.in',
+    contactPhone: '+91-22-42334000',
+  },
+  'hr-college': {
+    officialWebsite: 'https://hrcollege.edu/',
+    admissionLink: 'https://hrcollege.edu/admissions/',
+    accreditation: 'NAAC A',
+    contactEmail: 'info@hrcollege.edu',
+    contactPhone: '+91-22-22876115',
+  },
+  'mithibai-college': {
+    officialWebsite: 'https://mithibai.ac.in/',
+    admissionLink: 'https://mithibai.ac.in/admissions/',
+    accreditation: 'NAAC A',
+    contactEmail: 'principal@mithibai.ac.in',
+    contactPhone: '+91-22-42339000',
+  },
+  'jai-hind-college': {
+    officialWebsite: 'https://www.jaihindcollege.com/',
+    admissionLink: 'https://www.jaihindcollege.com/admissions/',
+    accreditation: 'NAAC A',
+    contactEmail: 'info@jaihindcollege.edu.in',
+    contactPhone: '+91-22-22040256',
+  },
+  'podar-college': {
+    officialWebsite: 'https://www.podarcollege.edu.in/',
+    admissionLink: 'https://www.podarcollege.edu.in/admission',
+    accreditation: 'NAAC A',
+    contactEmail: 'podarcollege@podarcollege.edu.in',
+    contactPhone: '+91-22-24143178',
+  },
+  'sydenham-college': {
+    officialWebsite: 'https://sydenham.ac.in/',
+    admissionLink: 'https://sydenham.ac.in/admission/',
+    accreditation: 'NAAC A',
+    contactEmail: 'principal.sydenham@dtemaharashtra.gov.in',
+    contactPhone: '+91-22-22042897',
+  },
+  'dg-ruia-college': {
+    officialWebsite: 'https://www.ruiacollege.edu/',
+    admissionLink: 'https://www.ruiacollege.edu/admissions/',
+    accreditation: 'NAAC A+',
+    contactEmail: 'office@ruiacollege.edu',
+    contactPhone: '+91-22-24143098',
+  },
+  'thakur-college-kandivali': {
+    officialWebsite: 'https://www.tcsc.edu.in/',
+    admissionLink: 'https://www.tcsc.edu.in/admissions',
+    accreditation: 'NAAC A',
+    contactEmail: 'admission@tcsc.edu.in',
+    contactPhone: '+91-22-28461891',
+  },
+  'kc-college': {
+    officialWebsite: 'https://www.kccollege.edu.in/',
+    admissionLink: 'https://www.kccollege.edu.in/admissions/',
+    accreditation: 'NAAC A',
+    contactEmail: 'kccollege@kccollege.edu.in',
+    contactPhone: '+91-22-22822290',
+  },
+  'kjs-college-of-science': {
+    officialWebsite: 'https://kjsac.somaiya.edu.in/',
+    admissionLink: 'https://kjsac.somaiya.edu.in/en/admission/',
+    accreditation: 'NAAC A',
+    contactEmail: 'info.kjsac@somaiya.edu',
+    contactPhone: '+91-22-21025919',
+  },
+  'bhavans-college-andheri': {
+    officialWebsite: 'https://www.bhavans.ac.in/',
+    admissionLink: 'https://www.bhavans.ac.in/admissions',
+    accreditation: 'NAAC A',
+    contactEmail: 'principal@bhavans.ac.in',
+    contactPhone: '+91-22-26256451',
+  },
+  'guru-nanak-college': {
+    officialWebsite: 'https://www.gnkhalsa.edu.in/',
+    admissionLink: 'https://www.gnkhalsa.edu.in/admission',
+    accreditation: 'NAAC A',
+    contactEmail: 'principal@gnkhalsa.edu.in',
+    contactPhone: '+91-22-24096234',
+  },
+  'dr-bhanuben-nanavati': {
+    officialWebsite: 'https://www.bncp.ac.in/',
+    admissionLink: 'https://www.bncp.ac.in/admission',
+    accreditation: 'NBA + NAAC',
+    admissionMode: 'Merit + CET based as per Pharmacy Council norms',
+    contactEmail: 'principal@bncp.ac.in',
+    contactPhone: '+91-22-26231334',
+  },
+  'ismail-yusuf-college': {
+    officialWebsite: 'https://ismailyusufcollege.edu.in/',
+    admissionLink: 'https://ismailyusufcollege.edu.in/admission/',
+    accreditation: 'Government Aided',
+    contactEmail: 'iycprincipal@gmail.com',
+    contactPhone: '+91-22-28323701',
+  },
+}
+
+export function getCollegeDetailsBySlug(
+  slug: string,
+  name: string,
+  courses: string[],
+  location?: string
+): CollegeDetails {
+  const known = collegeDirectory[slug] ?? {}
+  const searchQuery = encodeURIComponent(`${name} ${location ?? ''} official admission`)
+  const fallbackAdmissionLink = `https://www.google.com/search?q=${searchQuery}`
+  const locationHint = location ? ` | Campus: ${location}` : ''
+
+  return {
+    officialWebsite: known.officialWebsite ?? mumbaiUniversityAdmissionPortal,
+    admissionLink: known.admissionLink ?? fallbackAdmissionLink,
+    university: known.university ?? `University of Mumbai (affiliated/autonomous as applicable)${locationHint}`,
+    accreditation: known.accreditation ?? 'NAAC / UGC recognized institution',
+    admissionMode: known.admissionMode ?? 'Primarily merit based with program specific rules',
+    contactEmail: known.contactEmail ?? 'admissions@college.edu',
+    contactPhone: known.contactPhone ?? '+91-22-00000000',
+    popularPrograms: known.popularPrograms ?? courses.slice(0, 4),
+  }
+}
+
+export function getCollegeAdmissionLink(
+  slug: string,
+  name: string,
+  location?: string
+): string {
+  const details = getCollegeDetailsBySlug(slug, name, [], location)
+  return details.admissionLink
+}

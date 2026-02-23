@@ -10,7 +10,7 @@ export default function HelpPage() {
   return (
     <main className="min-h-screen bg-slate-50 pt-24 pb-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-cyan-100 bg-white p-8 shadow-sm">
+        <div className="rounded-2xl border border-amber-100 bg-white p-8 shadow-sm">
           <h1 className="text-4xl font-bold text-slate-900 mb-6">Help Center</h1>
           <div className="space-y-4">
             {faqs.map((faq) => (
@@ -20,10 +20,10 @@ export default function HelpPage() {
               </div>
             ))}
           </div>
-          <div className="mt-8">
-            <Link href="/contact" className="text-cyan-700 font-semibold hover:underline">
-              Contact Support
-            </Link>
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Link href="/contact" className="text-amber-700 font-semibold hover:underline">Contact Support</Link>
+            <Link href="/faq" className="text-amber-700 font-semibold hover:underline">Read FAQ</Link>
+            <Link href="/colleges" className="text-amber-700 font-semibold hover:underline">Browse Colleges</Link>
           </div>
         </div>
       </div>

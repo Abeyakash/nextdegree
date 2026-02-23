@@ -2,22 +2,22 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import CollegeCard from '@/components/CollegeCard'
 import { Button } from '@/components/ui/Button'
 import { ChatIcon } from '@/components/ChatIcon'
 import { ChatBot } from '@/components/ChatBot'
 import { College } from '@/data/colleges'
 import {
-  Sparkles,
-  SlidersHorizontal,
   History,
-  GraduationCap,
-  WalletCards,
   ArrowUp,
   BarChart3,
   Clock3,
   Keyboard,
   Search,
+  Sparkles,
+  ShieldCheck,
+  WandSparkles,
 } from 'lucide-react'
 
 interface NewsArticle {
@@ -48,19 +48,15 @@ const normalizeCourses = (courses: unknown): string[] => {
 
 type SortOption = 'relevance' | 'rating' | 'feesLow' | 'feesHigh'
 
-const quickFilters = ['Top Rated', 'Affordable', 'Commerce', 'Science', 'Churchgate']
-const streamExplorer = ['BCom', 'BMS', 'BA', 'BSc', 'IT']
-
-const readLocalJson = <T,>(key: string, fallback: T): T => {
-  if (typeof window === 'undefined') return fallback
-  try {
-    const raw = localStorage.getItem(key)
-    if (!raw) return fallback
-    return JSON.parse(raw) as T
-  } catch {
-    return fallback
-  }
-}
+const quickFilters = ['Top Rated', 'Affordable', 'Commerce', 'Science']
+const streamExplorer = ['Arts', 'Commerce', 'Science', 'BMS', 'IT']
+const liveHighlights = [
+  'Admission Alerts Updated',
+  'Scholarship Friendly Picks',
+  'Top Recruiter Colleges',
+  'Low Budget + High Rating',
+  'Trending Commerce Campuses',
+]
 
 export default function HomePageClient({
   initialColleges,
@@ -73,15 +69,12 @@ export default function HomePageClient({
   favoriteCollegeIds: Set<number>
   news: NewsArticle[]
 }) {
+  const router = useRouter()
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('relevance')
-  const [recentSearches, setRecentSearches] = useState<string[]>(() =>
-    readLocalJson<string[]>('recent-searches', []).filter((item) => typeof item === 'string').slice(0, 5)
-  )
-  const [recentlyViewed, setRecentlyViewed] = useState<ViewedCollege[]>(() =>
-    readLocalJson<ViewedCollege[]>('recently-viewed-colleges', []).slice(0, 5)
-  )
+  const [recentSearches, setRecentSearches] = useState<string[]>([])
+  const [recentlyViewed, setRecentlyViewed] = useState<ViewedCollege[]>([])
   const [budget, setBudget] = useState(50000)
   const [showBackToTop, setShowBackToTop] = useState(false)
   const [highlightResults, setHighlightResults] = useState(false)
@@ -97,6 +90,7 @@ export default function HomePageClient({
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('animate-in')
+            observer.unobserve(entry.target)
           }
         })
       },
@@ -108,6 +102,39 @@ export default function HomePageClient({
     if (collegesRef.current) observer.observe(collegesRef.current)
 
     return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    try {
+      const storedSearches = localStorage.getItem('recent-searches')
+      if (storedSearches) {
+        const parsed = JSON.parse(storedSearches)
+        if (Array.isArray(parsed)) {
+          const nextSearches = parsed.filter((item): item is string => typeof item === 'string').slice(0, 5)
+          requestAnimationFrame(() => setRecentSearches(nextSearches))
+        }
+      }
+
+      const storedViewed = localStorage.getItem('recently-viewed-colleges')
+      if (storedViewed) {
+        const parsed = JSON.parse(storedViewed)
+        if (Array.isArray(parsed)) {
+          const nextViewed = parsed
+            .filter(
+              (item): item is ViewedCollege =>
+                typeof item === 'object' &&
+                item !== null &&
+                typeof item.id === 'number' &&
+                typeof item.name === 'string' &&
+                typeof item.slug === 'string'
+            )
+            .slice(0, 5)
+          requestAnimationFrame(() => setRecentlyViewed(nextViewed))
+        }
+      }
+    } catch {
+      // Ignore malformed localStorage payloads.
+    }
   }, [])
 
   useEffect(() => {
@@ -216,6 +243,8 @@ export default function HomePageClient({
 
   const executeSearch = () => {
     rememberSearch(query)
+    const cleaned = query.trim()
+    router.push(cleaned ? `/colleges?q=${encodeURIComponent(cleaned)}` : '/colleges')
     handleSearch()
   }
 
@@ -234,17 +263,17 @@ export default function HomePageClient({
   }
 
   return (
-    <main className="min-h-screen bg-slate-100">
+    <main className="min-h-screen aurora-bg animated-glow">
       <section
         ref={heroRef}
-        className="relative overflow-hidden bg-gradient-to-br from-slate-100 via-blue-50 to-slate-200 py-20 opacity-0 translate-y-8 transition-all duration-700"
+        className="smooth-section relative overflow-hidden py-20 opacity-0 translate-y-8 transition-all duration-700"
       >
-        <div className="absolute -top-20 -left-16 h-72 w-72 rounded-full bg-blue-200/50 blur-3xl" />
-        <div className="absolute -bottom-28 -right-10 h-80 w-80 rounded-full bg-slate-300/50 blur-3xl" />
+        <div className="absolute -top-20 -left-16 h-72 w-72 rounded-full bg-teal-300/30 blur-3xl" />
+        <div className="absolute -bottom-28 -right-10 h-80 w-80 rounded-full bg-orange-300/30 blur-3xl" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6">
-            Find Your Perfect <span className="text-blue-700">College</span>
+            Find Your Perfect <span className="text-teal-700">College</span>
           </h1>
           <p className="text-xl text-slate-700 mb-8 max-w-3xl mx-auto">
             Discover top colleges in Mumbai, compare fees and ratings, and shortlist faster with smart tools.
@@ -261,10 +290,10 @@ export default function HomePageClient({
                   if (e.key === 'Enter') executeSearch()
                 }}
                 placeholder="Search colleges, courses..."
-                className="w-full px-6 py-3 text-lg border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all duration-300 hover:scale-[1.02] focus:shadow-lg focus:shadow-blue-200/60"
+                className="w-full px-6 py-3 text-lg text-slate-900 placeholder:text-slate-500 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black shadow-sm transition-all duration-300 hover:scale-[1.02] focus:shadow-lg focus:shadow-zinc-300/60"
               />
               {searchHints.length > 0 && (
-                <div className="absolute z-20 mt-2 w-full rounded-xl border border-blue-100 bg-white shadow-lg text-left">
+                <div className="absolute z-20 mt-2 w-full rounded-xl border border-zinc-200 bg-white shadow-lg text-left">
                   {searchHints.map((hint) => (
                     <button
                       key={hint}
@@ -274,7 +303,7 @@ export default function HomePageClient({
                         rememberSearch(hint)
                         setTimeout(() => handleSearch(), 100)
                       }}
-                      className="w-full px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 first:rounded-t-xl last:rounded-b-xl"
+                      className="w-full px-4 py-2 text-sm text-slate-700 hover:bg-zinc-100 first:rounded-t-xl last:rounded-b-xl"
                     >
                       {hint}
                     </button>
@@ -283,7 +312,7 @@ export default function HomePageClient({
               )}
             </div>
 
-            <Button variant="primary" size="lg" onClick={executeSearch} className="search-cta bg-blue-700 hover:bg-blue-800">
+            <Button variant="primary" size="lg" onClick={executeSearch} className="search-cta">
               Search
             </Button>
           </div>
@@ -298,7 +327,7 @@ export default function HomePageClient({
                 key={filter}
                 type="button"
                 onClick={() => applyQuickFilter(filter)}
-                className="rounded-full border border-blue-300 bg-white/90 px-4 py-2 text-sm font-medium text-blue-800 hover:bg-blue-100 transition-colors"
+                className="rounded-full border border-zinc-300 bg-white/90 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100 transition-colors"
               >
                 {filter}
               </button>
@@ -339,13 +368,26 @@ export default function HomePageClient({
           )}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="outline" size="lg">Get Course Guidance</Button>
-            <Button variant="secondary" size="lg">Compare Colleges</Button>
+            <Button variant="outline" size="lg" onClick={() => setIsChatOpen(true)}>Get Course Guidance</Button>
+            <Link href="/compare">
+              <Button variant="secondary" size="lg">Compare Colleges</Button>
+            </Link>
           </div>
         </div>
       </section>
 
-      <section ref={statsRef} className="py-16 bg-white opacity-0 translate-y-8 transition-all duration-700">
+      <section className="smooth-section py-4 bg-black text-white border-y border-zinc-800 overflow-hidden">
+        <div className="ticker-track">
+          {[...liveHighlights, ...liveHighlights].map((item, index) => (
+            <span key={`${item}-${index}`} className="inline-flex items-center gap-2 px-6 text-sm tracking-wide">
+              <Sparkles className="h-4 w-4 text-amber-400" />
+              {item}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <section ref={statsRef} className="smooth-section py-16 bg-transparent opacity-0 translate-y-8 transition-all duration-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
@@ -354,8 +396,8 @@ export default function HomePageClient({
               { number: '1000+', label: 'Students Helped' },
               { number: '95%', label: 'Success Rate' },
             ].map((stat, i) => (
-              <div key={i} className="transform hover:scale-110 transition-all duration-300 hover:shadow-xl p-4 rounded-xl">
-                <div className="text-3xl font-bold text-blue-700 mb-2">{stat.number}</div>
+              <div key={i} className="glass-warm transform hover:scale-110 transition-all duration-300 hover:shadow-xl p-4 rounded-xl">
+                <div className="text-3xl font-bold text-zinc-900 mb-2">{stat.number}</div>
                 <div className="text-gray-600">{stat.label}</div>
               </div>
             ))}
@@ -363,7 +405,34 @@ export default function HomePageClient({
         </div>
       </section>
 
-      <section className="py-12 bg-gradient-to-r from-slate-900 to-blue-900 text-white">
+      <section className="smooth-section py-14 bg-transparent">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="cool-panel p-6 rounded-2xl border border-zinc-200 bg-white shadow-sm">
+            <p className="text-xs uppercase tracking-widest text-amber-700 mb-2">Why NextDegree</p>
+            <h3 className="text-2xl font-bold text-zinc-900 mb-3">Shortlist Faster, Decide Better</h3>
+            <p className="text-zinc-600 mb-4">
+              Smart filters, compare view, and live search insights help you reduce confusion and pick the right college quickly.
+            </p>
+            <div className="flex items-center gap-2 text-sm text-zinc-800">
+              <ShieldCheck className="h-4 w-4 text-amber-700" />
+              Student-first data structure with clean experience
+            </div>
+          </div>
+          <div className="cool-panel p-6 rounded-2xl border border-zinc-200 bg-white shadow-sm">
+            <p className="text-xs uppercase tracking-widest text-amber-700 mb-2">Powered Flow</p>
+            <h3 className="text-2xl font-bold text-zinc-900 mb-3">Search, Compare, Apply</h3>
+            <p className="text-zinc-600 mb-4">
+              Discover colleges, compare outcomes, and jump to admission links in one continuous flow without unnecessary page hopping.
+            </p>
+            <div className="flex items-center gap-2 text-sm text-zinc-800">
+              <WandSparkles className="h-4 w-4 text-amber-700" />
+              Frictionless journey from interest to action
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="smooth-section py-12 bg-gradient-to-r from-black to-zinc-700 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {[
@@ -374,9 +443,9 @@ export default function HomePageClient({
               { title: 'Back To Top', subtitle: 'faster long page navigation', icon: ArrowUp },
             ].map(({ title, subtitle, icon: Icon }) => (
               <div key={title} className="feature-glass rounded-2xl p-4">
-                <Icon className="h-5 w-5 mb-2 text-blue-200" />
+                <Icon className="h-5 w-5 mb-2 text-zinc-200" />
                 <p className="font-semibold">{title}</p>
-                <p className="text-sm text-blue-100">{subtitle}</p>
+                <p className="text-sm text-zinc-300">{subtitle}</p>
               </div>
             ))}
           </div>
@@ -385,16 +454,16 @@ export default function HomePageClient({
 
       <section
         ref={collegesRef}
-        className={`py-20 bg-slate-100 opacity-0 translate-y-8 transition-all duration-700 ${highlightResults ? 'search-results-flash' : ''}`}
+        className={`smooth-section py-20 bg-slate-100 opacity-0 translate-y-8 transition-all duration-700 ${highlightResults ? 'search-results-flash' : ''}`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
               <p className="text-sm font-semibold text-slate-500 mb-2">Sort Results</p>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="w-full rounded-lg border border-slate-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
               >
                 <option value="relevance">Relevance</option>
                 <option value="rating">Highest Rating</option>
@@ -403,7 +472,7 @@ export default function HomePageClient({
               </select>
             </div>
 
-            <div className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm md:col-span-2">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm md:col-span-2">
               <p className="text-sm font-semibold text-slate-500 mb-2">Stream Explorer</p>
               <div className="flex flex-wrap gap-2">
                 {streamExplorer.map((stream) => (
@@ -415,7 +484,7 @@ export default function HomePageClient({
                       rememberSearch(stream)
                       setTimeout(() => handleSearch(), 120)
                     }}
-                    className="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800 hover:bg-blue-100 transition-colors"
+                    className="rounded-full bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-200 transition-colors"
                   >
                     {stream}
                   </button>
@@ -424,7 +493,7 @@ export default function HomePageClient({
             </div>
           </div>
 
-          <div className="mb-8 rounded-2xl bg-white p-5 border border-blue-100 shadow-sm">
+          <div className="mb-8 rounded-2xl bg-white p-5 border border-zinc-200 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-slate-500">Budget Planner</p>
@@ -437,7 +506,7 @@ export default function HomePageClient({
                 step={5000}
                 value={budget}
                 onChange={(e) => setBudget(Number(e.target.value))}
-                className="w-full md:w-96 accent-blue-700"
+                className="w-full md:w-96 accent-black"
               />
             </div>
           </div>
@@ -445,20 +514,20 @@ export default function HomePageClient({
           <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <p className="text-sm text-slate-500">Average Fees</p>
-              <p className="text-2xl font-bold text-blue-700">Rs. {searchInsights.avgFees.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-zinc-900">Rs. {searchInsights.avgFees.toLocaleString()}</p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <p className="text-sm text-slate-500">Top Rating</p>
-              <p className="text-2xl font-bold text-blue-700">{searchInsights.topRating.toFixed(1)} / 5</p>
+              <p className="text-2xl font-bold text-zinc-900">{searchInsights.topRating.toFixed(1)} / 5</p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <p className="text-sm text-slate-500">Average Rating</p>
-              <p className="text-2xl font-bold text-blue-700">{searchInsights.avgRating.toFixed(2)} / 5</p>
+              <p className="text-2xl font-bold text-zinc-900">{searchInsights.avgRating.toFixed(2)} / 5</p>
             </div>
           </div>
 
           {recentlyViewed.length > 0 && (
-            <div className="mb-8 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
+            <div className="mb-8 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
               <p className="text-sm font-semibold text-slate-600 mb-3 inline-flex items-center gap-2">
                 <History className="h-4 w-4" /> Recently Viewed
               </p>
@@ -484,9 +553,9 @@ export default function HomePageClient({
           </div>
 
           {filteredColleges.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
               {filteredColleges.slice(0, 6).map((college, index) => (
-                <div key={college.id} className="card-lift-in" style={{ animationDelay: `${index * 90}ms` }}>
+                <div key={college.id} className="card-lift-in h-full" style={{ animationDelay: `${index * 90}ms` }}>
                   <CollegeCard
                     college={college}
                     userId={userId}
@@ -502,7 +571,7 @@ export default function HomePageClient({
 
           <div className="text-center mt-12">
             <Link href="/colleges">
-              <button className="bg-blue-700 text-white px-8 py-4 rounded-xl hover:bg-blue-800 font-semibold text-lg shadow-lg transition-all hover:scale-105">
+              <button className="bg-black text-white px-8 py-4 rounded-xl hover:bg-zinc-800 font-semibold text-lg shadow-lg transition-all hover:scale-105">
                 View All Colleges
               </button>
             </Link>
@@ -510,7 +579,7 @@ export default function HomePageClient({
         </div>
       </section>
 
-      <section className="py-20 bg-white">
+      <section className="smooth-section py-20 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Latest News and Updates</h2>
@@ -525,7 +594,7 @@ export default function HomePageClient({
                 rel="noopener noreferrer"
                 className="block p-6 bg-gray-50 rounded-lg hover:bg-gray-100 border border-gray-200 transition-colors"
               >
-                <h3 className="text-xl font-semibold text-blue-800">{item.title}</h3>
+                <h3 className="text-xl font-semibold text-zinc-900">{item.title}</h3>
                 <p className="mt-2 text-gray-600">{item.summary}</p>
               </a>
             ))}
@@ -572,7 +641,7 @@ export default function HomePageClient({
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-24 left-5 z-40 rounded-full bg-blue-700 p-3 text-white shadow-xl hover:bg-blue-800"
+          className="fixed bottom-24 left-5 z-40 rounded-full bg-black p-3 text-white shadow-xl hover:bg-zinc-800"
           aria-label="Back to top"
         >
           <ArrowUp className="h-5 w-5" />
@@ -584,3 +653,4 @@ export default function HomePageClient({
     </main>
   )
 }
+

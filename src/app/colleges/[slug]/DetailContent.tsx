@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, Calendar, Briefcase, Award } from 'lucide-react';
 import { College } from '../../../data/colleges';
-// FIX: 'AddReviewForm' aur 'ReviewsList' ko import kiya gaya hai
 import AddReviewForm from '@/components/reviews/AddReviewForm';
 import ReviewsList from '@/components/reviews/ReviewsList';
 
@@ -16,22 +15,10 @@ interface DetailContentProps {
 export const DetailContent: React.FC<DetailContentProps> = ({ college, userId }) => {
     const [activeTab, setActiveTab] = useState('Overview');
     const tabs = ['Overview', 'Courses & Fees', 'Placements', 'Admissions', 'Reviews'];
-    
-    // FIX: Purane state (reviewCount) aur function (handleReviewAdded) ko hata diya hu
+
     const [formName, setFormName] = useState('');
     const [formEmail, setFormEmail] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
-
-    const ContentAnimation: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-        <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-        >
-            {children}
-        </motion.div>
-    );
 
     const handleGuidanceSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,12 +56,9 @@ export const DetailContent: React.FC<DetailContentProps> = ({ college, userId })
                     </div>
                 );
             case 'Admissions':
-                
                 return (<p className="text-gray-700 text-lg">Admission process typically includes cut-off announcements, application deadlines, and document verification steps. Check the college&apos;s official website for the latest schedule.</p>);
             case 'Reviews':
-               
-                
-         return (
+                return (
                     <div className="space-y-8">
                         {userId && <AddReviewForm collegeId={college.id} />}
                         <ReviewsList collegeId={college.id} />
@@ -89,7 +73,16 @@ export const DetailContent: React.FC<DetailContentProps> = ({ college, userId })
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
                 <div className="flex border-b border-gray-200 mb-6 bg-white rounded-t-xl shadow-md p-2">{tabs.map((tab) => (<button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 px-4 py-3 font-medium text-lg transition-colors rounded-lg ${activeTab === tab ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}>{tab}</button>))}</div>
-                <div className="bg-white p-8 rounded-b-xl rounded-tr-xl shadow-xl min-h-[400px]"><ContentAnimation>{renderTabContent()}</ContentAnimation></div>
+                <div className="bg-white p-8 rounded-b-xl rounded-tr-xl shadow-xl min-h-[400px]">
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        {renderTabContent()}
+                    </motion.div>
+                </div>
             </div>
             <aside className="lg:col-span-1 bg-white p-6 rounded-xl shadow-2xl h-fit sticky top-24">
                 <h2 className="text-2xl font-bold mb-4 text-blue-600">Quick Guidance</h2>

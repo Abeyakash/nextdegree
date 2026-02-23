@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 
-// Yeh Filters type export karna zaroori hai taaki page isse use kar sake
 export interface Filters {
   location: string;
   fees: string;
@@ -16,6 +15,8 @@ interface HeroSearchProps {
   ratings: number[];
   feesRanges: string[];
   onSearch: (query: string, filters: Filters) => void;
+  initialQuery?: string;
+  initialFilters?: Partial<Filters>;
 }
 
 export const HeroSearch: React.FC<HeroSearchProps> = ({
@@ -23,21 +24,35 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
   locations,
   ratings,
   feesRanges,
-  onSearch
+  onSearch,
+  initialQuery = '',
+  initialFilters,
 }) => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [filters, setFilters] = useState<Filters>({
     location: 'All',
     fees: 'All',
     rating: 'All',
     course: 'All',
+    ...initialFilters,
   });
 
-  // Yeh hook search ko automatic (live) banata hai
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
+
+  useEffect(() => {
+    if (!initialFilters) return;
+    setFilters((prev) => ({
+      ...prev,
+      ...initialFilters,
+    }));
+  }, [initialFilters]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       onSearch(query, filters);
-    }, 300);
+    }, 250);
 
     return () => clearTimeout(timer);
   }, [query, filters, onSearch]);
@@ -48,81 +63,81 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
+    setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg mb-12">
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        
-        {/* Search Input */}
         <input
           id="search"
           type="text"
           placeholder="Search by college, course, or city..."
           value={query}
           onChange={handleInputChange}
-          className="md:col-span-5 w-full p-3 rounded-md border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+          className="md:col-span-5 w-full p-3 rounded-md border border-gray-300 text-gray-900 placeholder:text-gray-500 focus:ring-black focus:border-black"
         />
-        
-        {/* Location Filter */}
+
         <select
           name="location"
           aria-label="Filter by Location"
           value={filters.location}
           onChange={handleFilterChange}
-          className="w-full p-3 rounded-md border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+          className="w-full p-3 rounded-md border border-gray-300 text-gray-900 focus:ring-black focus:border-black"
         >
           <option value="All">All Locations</option>
-          {locations.map(loc => (
-            <option key={loc} value={loc}>{loc}</option>
+          {locations.map((loc) => (
+            <option key={loc} value={loc}>
+              {loc}
+            </option>
           ))}
         </select>
 
-        {/* Fees Filter */}
         <select
           name="fees"
           aria-label="Filter by Fees"
           value={filters.fees}
           onChange={handleFilterChange}
-          className="w-full p-3 rounded-md border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+          className="w-full p-3 rounded-md border border-gray-300 text-gray-900 focus:ring-black focus:border-black"
         >
           <option value="All">All Fees</option>
-          {feesRanges.map(f => (
-            <option key={f} value={f}>{f}</option>
+          {feesRanges.map((range) => (
+            <option key={range} value={range}>
+              {range}
+            </option>
           ))}
         </select>
 
-        {/* Rating Filter */}
         <select
           name="rating"
           aria-label="Filter by Rating"
           value={filters.rating}
           onChange={handleFilterChange}
-          className="w-full p-3 rounded-md border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+          className="w-full p-3 rounded-md border border-gray-300 text-gray-900 focus:ring-black focus:border-black"
         >
           <option value="All">All Ratings</option>
-          {ratings.map(r => (
-            <option key={r} value={String(r)}>{r}★+</option>
+          {ratings.map((rating) => (
+            <option key={rating} value={String(rating)}>
+              {rating}★+
+            </option>
           ))}
         </select>
 
-        {/* Course Filter */}
         <select
           name="course"
           aria-label="Filter by Course"
           value={filters.course}
           onChange={handleFilterChange}
-          className="w-full p-3 rounded-md border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+          className="w-full p-3 rounded-md border border-gray-300 text-gray-900 focus:ring-black focus:border-black"
         >
           <option value="All">All Courses</option>
-          {courses.map(c => (
-            <option key={c} value={c}>{c}</option>
+          {courses.map((course) => (
+            <option key={course} value={course}>
+              {course}
+            </option>
           ))}
         </select>
-
       </div>
     </div>
   );
 };
-

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { X, Send, Sparkles, TrendingUp, MapPin, DollarSign, Code2, Copy, Check } from 'lucide-react'
+import { X, Send, Sparkles, TrendingUp, MapPin, DollarSign, Code2, Copy, Check, Mic, Download, Trash2 } from 'lucide-react'
 import { colleges } from '@/data/colleges'
 
 interface CollegeCard {
@@ -20,6 +20,22 @@ type Message = {
   collegeCard?: CollegeCard
   codeSnippet?: { language: string; code: string }
 }
+
+type VoiceRecognitionEvent = {
+  results?: ArrayLike<ArrayLike<{ transcript?: string }>>
+}
+
+type VoiceRecognitionInstance = {
+  lang: string
+  interimResults: boolean
+  maxAlternatives: number
+  onresult: ((event: VoiceRecognitionEvent) => void) | null
+  onerror: (() => void) | null
+  onend: (() => void) | null
+  start: () => void
+}
+
+type VoiceRecognitionCtor = new () => VoiceRecognitionInstance
 
 const normalize = (value: string) => value.toLowerCase().trim()
 
@@ -77,21 +93,24 @@ const makeCodeReply = (topic: string): Message => {
 }
 
 export const ChatBot = ({ onClose }: { onClose: () => void }) => {
+  const initialMessage: Message = {
+    sender: 'bot',
+    text: 'Namaste! Main NextDegree assistant hoon. College info, compare, fees, ratings aur coding help dono de sakta hoon.',
+    suggestions: [
+      'Best colleges Mumbai',
+      'Affordable colleges',
+      'HR College details',
+      'API route code',
+    ],
+  }
+
   const [messages, setMessages] = useState<Message[]>([
-    {
-      sender: 'bot',
-      text: 'Namaste! Main NextDegree assistant hoon. College info, compare, fees, ratings aur coding help dono de sakta hoon.',
-      suggestions: [
-        'Best colleges Mumbai',
-        'Affordable colleges',
-        'HR College details',
-        'API route code',
-      ],
-    },
+    initialMessage,
   ])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const [isListening, setIsListening] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -227,16 +246,61 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
     }
   }
 
+  const exportChat = async () => {
+    const transcript = messages.map((message) => `${message.sender.toUpperCase()}: ${message.text}`).join('\n\n')
+    await navigator.clipboard.writeText(transcript)
+    setCopiedIndex(-1)
+    setTimeout(() => setCopiedIndex(null), 1200)
+  }
+
+  const clearChat = () => {
+    setMessages([initialMessage])
+    setInput('')
+    setIsTyping(false)
+  }
+
+  const startVoiceInput = () => {
+    const browserWindow = window as unknown as {
+      SpeechRecognition?: VoiceRecognitionCtor
+      webkitSpeechRecognition?: VoiceRecognitionCtor
+    }
+    const SpeechRecognition = browserWindow.SpeechRecognition || browserWindow.webkitSpeechRecognition
+
+    if (!SpeechRecognition) return
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'en-IN'
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+    setIsListening(true)
+
+    recognition.onresult = (event: VoiceRecognitionEvent) => {
+      const text = event.results?.[0]?.[0]?.transcript ?? ''
+      setInput(text)
+    }
+    recognition.onerror = () => setIsListening(false)
+    recognition.onend = () => setIsListening(false)
+    recognition.start()
+  }
+
   return (
-    <div className="fixed bottom-5 right-5 w-[24rem] max-w-[calc(100vw-1.5rem)] bg-white border border-blue-200 rounded-2xl shadow-2xl flex flex-col z-50 max-h-[78vh]">
-      <div className="flex justify-between items-center p-4 bg-gradient-to-r from-slate-900 to-blue-800 text-white rounded-t-2xl">
+    <div className="fixed bottom-5 right-5 w-[24rem] max-w-[calc(100vw-1.5rem)] bg-white border border-amber-200 rounded-2xl shadow-2xl flex flex-col z-50 max-h-[78vh]">
+      <div className="flex justify-between items-center p-4 bg-gradient-to-r from-black to-zinc-800 text-white rounded-t-2xl">
         <div className="flex items-center">
-          <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
+          <Sparkles className="w-5 h-5 mr-2 animate-pulse text-amber-300" />
           <h2 className="font-bold text-lg">NextDegree Assistant</h2>
         </div>
-        <button onClick={onClose} className="hover:bg-white/20 rounded-full p-1 transition-colors" aria-label="Close chat">
-          <X className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={exportChat} className="hover:bg-white/20 rounded-full p-1 transition-colors" aria-label="Export chat">
+            <Download className="w-4 h-4" />
+          </button>
+          <button onClick={clearChat} className="hover:bg-white/20 rounded-full p-1 transition-colors" aria-label="Clear chat">
+            <Trash2 className="w-4 h-4" />
+          </button>
+          <button onClick={onClose} className="hover:bg-white/20 rounded-full p-1 transition-colors" aria-label="Close chat">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       <div className="px-4 pt-3 pb-2 border-b border-slate-100 flex gap-2 flex-wrap bg-slate-50">
@@ -245,7 +309,7 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
             key={topic}
             type="button"
             onClick={() => sendMessage(topic)}
-            className="text-xs px-2.5 py-1 rounded-full bg-white border border-blue-200 text-blue-700 hover:bg-blue-50"
+            className="text-xs px-2.5 py-1 rounded-full bg-white border border-amber-200 text-amber-700 hover:bg-amber-50"
           >
             {topic}
           </button>
@@ -259,7 +323,7 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
               <div
                 className={`px-4 py-3 rounded-2xl max-w-[84%] shadow-sm ${
                   message.sender === 'user'
-                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
+                    ? 'bg-gradient-to-r from-black to-zinc-800 text-white'
                     : 'bg-white text-slate-800 border border-slate-200'
                 }`}
               >
@@ -268,16 +332,16 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
             </div>
 
             {message.collegeCard && (
-              <div className="mt-3 ml-2 bg-white border border-blue-200 rounded-xl p-4 shadow-sm">
-                <h3 className="font-bold text-base text-blue-700 mb-2">{message.collegeCard.name}</h3>
+              <div className="mt-3 ml-2 bg-white border border-amber-200 rounded-xl p-4 shadow-sm">
+                <h3 className="font-bold text-base text-zinc-900 mb-2">{message.collegeCard.name}</h3>
                 <div className="space-y-1.5 text-sm text-slate-700">
-                  <div className="flex items-center"><MapPin className="w-4 h-4 mr-2 text-blue-500" />{message.collegeCard.location}</div>
-                  <div className="flex items-center"><DollarSign className="w-4 h-4 mr-2 text-emerald-600" />Rs. {message.collegeCard.fees.toLocaleString()}/year</div>
-                  <div className="flex items-center"><TrendingUp className="w-4 h-4 mr-2 text-purple-600" />Rating: {message.collegeCard.rating}/5</div>
+                  <div className="flex items-center"><MapPin className="w-4 h-4 mr-2 text-amber-700" />{message.collegeCard.location}</div>
+                  <div className="flex items-center"><DollarSign className="w-4 h-4 mr-2 text-zinc-700" />Rs. {message.collegeCard.fees.toLocaleString()}/year</div>
+                  <div className="flex items-center"><TrendingUp className="w-4 h-4 mr-2 text-zinc-700" />Rating: {message.collegeCard.rating}/5</div>
                 </div>
                 <Link
                   href={`/colleges/${message.collegeCard.slug}`}
-                  className="mt-3 block text-center w-full bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition-colors text-sm font-medium"
+                  className="mt-3 block text-center w-full bg-black text-white py-2 rounded-lg hover:bg-zinc-800 transition-colors text-sm font-medium"
                 >
                   View Full Details
                 </Link>
@@ -307,7 +371,7 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
                   <button
                     key={`${suggestion}-${i}`}
                     onClick={() => sendMessage(suggestion)}
-                    className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs hover:bg-blue-100 transition-colors border border-blue-200 font-medium"
+                    className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full text-xs hover:bg-amber-100 transition-colors border border-amber-200 font-medium"
                   >
                     {suggestion}
                   </button>
@@ -321,9 +385,10 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
           <div className="flex justify-start">
             <div className="bg-white px-4 py-3 rounded-2xl border border-gray-200">
               <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                <div className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-amber-600 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                <div className="w-2 h-2 bg-zinc-700 rounded-full animate-bounce [animation-delay:0.4s]"></div>
               </div>
             </div>
           </div>
@@ -337,12 +402,19 @@ export const ChatBot = ({ onClose }: { onClose: () => void }) => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          className="flex-1 px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
+          className="flex-1 px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-amber-600 transition-colors"
           placeholder="Ask about colleges or code snippets..."
         />
         <button
+          onClick={startVoiceInput}
+          className={`ml-2 p-3 rounded-xl transition-all ${isListening ? 'bg-amber-100 text-amber-700' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'}`}
+          aria-label="Voice input"
+        >
+          <Mic className="w-5 h-5" />
+        </button>
+        <button
           onClick={() => sendMessage()}
-          className="ml-2 bg-gradient-to-r from-blue-700 to-slate-800 text-white p-3 rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
+          className="ml-2 bg-gradient-to-r from-black to-zinc-800 text-white p-3 rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
           disabled={!input.trim()}
           aria-label="Send message"
         >

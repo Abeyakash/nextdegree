@@ -23,7 +23,7 @@ export default function CollegeCard({ college, userId, isFavorited, onViewDetail
   };
 
   return (
-    <div className="group bg-white rounded-xl shadow-lg border border-cyan-100 hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.01] overflow-hidden flex flex-col">
+    <div className="group h-full bg-white rounded-xl shadow-lg border border-zinc-200 hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.01] overflow-hidden flex flex-col">
       <div className="relative h-48 w-full overflow-hidden">
         <Image
           src={college.image}
@@ -48,16 +48,16 @@ export default function CollegeCard({ college, userId, isFavorited, onViewDetail
         )}
       </div>
       <div className="p-6 flex flex-col flex-grow">
-        <div className="flex justify-between items-start mb-4">
-          <div>
+        <div className="flex justify-between items-start mb-4 gap-3">
+          <div className="min-h-[80px]">
             <Link
               href={`/colleges/${college.slug}`}
-              className="text-2xl font-bold text-gray-800 hover:text-cyan-700 transition-colors"
+              className="text-xl font-bold text-gray-800 hover:text-amber-700 transition-colors clamp-2 leading-tight"
               onClick={handleViewDetails}
             >
               {college.name}
             </Link>
-            <p className="text-sm text-gray-500 flex items-center mt-1">
+            <p className="text-sm text-gray-500 flex items-center mt-1 truncate">
               <MapPin className="w-4 h-4 mr-1"/> {college.location}
             </p>
           </div>
@@ -66,12 +66,16 @@ export default function CollegeCard({ college, userId, isFavorited, onViewDetail
             {college.rating.toFixed(1)}
           </div>
         </div>
-        <div className="flex justify-between items-center text-sm text-gray-600 border-t pt-4 mt-4">
-          <p className="flex items-center">
+        <div className="grid grid-cols-2 gap-2 text-xs text-zinc-600 border-t pt-4 mt-4">
+          <p>Students: <span className="font-semibold text-zinc-800">{college.students}</span></p>
+          <p>Established: <span className="font-semibold text-zinc-800">{college.established}</span></p>
+        </div>
+        <div className="flex justify-between items-start text-sm text-gray-600 border-t pt-4 mt-4 gap-3 min-h-[72px]">
+          <p className="flex items-start clamp-2">
             <Briefcase className="w-4 h-4 mr-2 text-purple-500" />
             {college.courses.join(', ')}
           </p>
-          <p className="flex items-center font-bold text-green-700">
+          <p className="flex items-center font-bold text-green-700 shrink-0">
             <IndianRupee className="w-4 h-4 mr-1" />
             {college.fees.toLocaleString()}/year
           </p>
@@ -79,7 +83,7 @@ export default function CollegeCard({ college, userId, isFavorited, onViewDetail
         <div className="mt-auto pt-6 flex items-center justify-between">
           <Link
             href={`/colleges/${college.slug}`}
-            className="inline-flex items-center text-cyan-700 hover:text-cyan-900 font-semibold transition-colors"
+            className="inline-flex items-center text-amber-700 hover:text-amber-900 font-semibold transition-colors"
             onClick={handleViewDetails}
           >
             View Details <ChevronRight className="w-4 h-4 ml-1" />
@@ -87,7 +91,7 @@ export default function CollegeCard({ college, userId, isFavorited, onViewDetail
           <button
             onClick={() => addToCompare(college)}
             disabled={isInCompare}
-            className={`px-4 py-2 rounded-md text-white font-semibold transition-colors ${isInCompare ? 'bg-gray-400 cursor-not-allowed' : 'bg-cyan-700 hover:bg-cyan-800'}`}
+            className={`px-4 py-2 rounded-md text-white font-semibold transition-colors ${isInCompare ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-zinc-800'}`}
           >
             {isInCompare ? 'Added' : 'Add to Compare'}
           </button>
